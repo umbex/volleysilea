@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calendario Volley Silea 2025/26</title>
+  <style>
+    :root{
+      --azzurro:#0EA5E9;          /* primario (azzurro vivido) */
+      --azzurro-50:#E0F2FE;       /* sfondo card CASA */
+      --azzurro-600:#0284C7;      /* testi su azzurro */
+      --grigio-50:#F3F4F6;        /* sfondo card TRASFERTA */
+      --grigio-300:#D1D5DB;
+      --viola:#7C3AED;            /* label Viki */
+      --giallo:#F59E0B;           /* label Mati */
+      --nero:#0B1220;
+      --bianco:#FFFFFF;
+    }
+    html,body{margin:0;padding:0;background:#fff;color:var(--nero);font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";}
+    .app{max-width:780px;margin:0 auto;padding:16px 14px 100px;}
+    header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg, #fff 80%, rgba(255,255,255,0));padding:16px 0 10px;}
+    h1{margin:0 0 10px;font-weight:800;letter-spacing:0.2px;font-size:1.45rem;line-height:1.2;}
+    .subtitle{font-size:0.98rem;color:#4B5563;margin-top:4px}
+
+    /* Pulsanti filtro */
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}
+    .btn{appearance:none;border:0;border-radius:999px;padding:10px 14px;font-weight:700;font-size:0.98rem;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06),0 1px 1px rgba(0,0,0,.03);transition:transform .06s ease, background .2s ease, box-shadow .2s ease;}
+    .btn:active{transform:scale(0.98)}
+    .btn-primary{background:var(--azzurro);color:var(--bianco);} 
+    .btn-outline{background:var(--bianco);color:var(--azzurro-600);border:2px solid var(--azzurro);} 
+
+    /* Card partita */
+    .list{display:grid;gap:12px}
+    .card{border-radius:18px;padding:14px 14px 12px;border:1px solid rgba(2,132,199,.08);box-shadow:0 1px 2px rgba(2,132,199,.06), 0 12px 24px -24px rgba(0,0,0,.25)}
+    .card.casa{background:var(--azzurro-50)}
+    .card.trasferta{background:var(--grigio-50)}
+
+    .row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .left{min-width:0;flex:1}
+
+    .topline{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .badge-sede{font-weight:800;font-size:0.78rem;line-height:1;border-radius:999px;padding:6px 10px;border:1px solid rgba(0,0,0,.05);text-transform:uppercase;letter-spacing:.35px}
+    .when{font-weight:700;font-size:1.05rem}
+
+    .teams{font-size:1.02rem;line-height:1.35;margin:8px 0 6px}
+    .home{font-weight:800}
+    .vs{opacity:.6;padding:0 6px}
+
+    .labels{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+    .label{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:6px 10px;font-weight:800;font-size:0.78rem;line-height:1;border:1px solid rgba(0,0,0,.06)}
+    .label.viki{background: var(--viola); color: #fff}
+    .label.mati{background: var(--giallo); color: #111}
+
+    .place{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+    .place a{color:#0f172a;text-decoration:none;border-bottom:2px solid transparent}
+    .place a:hover{border-bottom-color:currentColor}
+    .imp{font-weight:700}
+    .addr{font-size:0.98rem;color:#374151}
+
+    .right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:84px}
+    .tag-casa{background:var(--azzurro);color:#fff}
+    .tag-trasferta{background:#9CA3AF;color:#111}
+    .chip{border-radius:999px;padding:6px 10px;font-weight:800;font-size:0.72rem;letter-spacing:.3px}
+
+    .meta{margin-top:10px;font-size:0.86rem;color:#374151}
+
+    /* Accessibilità: dimensioni comode */
+    @media (min-width:480px){
+      h1{font-size:1.6rem}
+      .when{font-size:1.12rem}
+      .teams{font-size:1.06rem}
+    }
+
+    /* Stato/GUIDE */
+    .notice{padding:12px 14px;border-radius:12px;background:#FEF3C7;border:1px solid #FCD34D;color:#7C2D12;margin:8px 0 16px}
+    .hidden{display:none !important}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Calendario Volley Silea 2025/26</h1>
+      <div class="subtitle">Card mobile-friendly. Casa in azzurro, trasferta in grigio. Filtri rapidi qui sotto.</div>
+      <div class="controls" role="group" aria-label="Filtri calendario">
+        <button id="btn-upcoming" class="btn btn-primary" type="button">Mostra le partite da giocare</button>
+        <button id="btn-all" class="btn btn-outline" type="button">Mostra tutte</button>
+      </div>
+    </header>
+
+    <div id="status" class="notice hidden" aria-live="polite"></div>
+
+    <section id="list" class="list" aria-live="polite"></section>
+  </div>
+
+  <script>
+  // === CONFIG ===
+  const SHEET_ID = "1TL4uYGiCLY1pzWM7omzWGiUVxPBnKb0wAAOAesQXZXc"; // id del Google Sheet
+  const SHEET_NAME = "Tab"; // cambia se il nome del foglio è diverso
+  const CSV_URLS = [
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`,
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`
+  ];
+
+  // === UTILS ===
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const it = new Intl.DateTimeFormat('it-IT', { weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+  const itTime = new Intl.DateTimeFormat('it-IT', { hour:'2-digit', minute:'2-digit'});
+
+  function csvParse(str){
+    // CSV parser semplice che rispetta le virgolette
+    const rows = [];
+    let i=0, field='', row=[], inQuotes=false;
+    while(i < str.length){
+      const c = str[i];
+      if(inQuotes){
+        if(c === '"'){
+          if(str[i+1] === '"'){ field+='"'; i++; }
+          else { inQuotes=false; }
+        } else { field += c; }
+      } else {
+        if(c === '"') inQuotes = true;
+        else if(c === ','){ row.push(field); field=''; }
+        else if(c === '\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+        else if(c === '\r'){ /* skip */ }
+        else { field += c; }
+      }
+      i++;
+    }
+    if(field.length>0 || row.length>0) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  function toDateISO(mdy, hm){
+    // mdy tipo "9/27/2025" oppure "27/09/2025" (gestiamo entrambi)
+    if(!mdy) return null;
+    let d, m, y;
+    if(mdy.includes('/')){
+      const parts = mdy.split('/').map(s=>s.trim());
+      if(parts[0].length<=2 && parts[1].length<=2){
+        // Ambiguo: proviamo a capire se formato è M/D/Y (Sheets export en-US) o D/M/Y
+        // Se primo > 12 => D/M/Y
+        if(Number(parts[0])>12){ d=Number(parts[0]); m=Number(parts[1]); y=Number(parts[2]); }
+        else if(Number(parts[1])>12){ d=Number(parts[1]); m=Number(parts[0]); y=Number(parts[2]); }
+        else { // fallback: M/D/Y
+          m=Number(parts[0]); d=Number(parts[1]); y=Number(parts[2]);
+        }
+      } else { // es. YYYY/MM/DD
+        y=Number(parts[0]); m=Number(parts[1]); d=Number(parts[2]);
+      }
+    }
+    let hh=12, mm=0; // mezzogiorno come default per ordinamento
+    if(hm && /\d\d?:\d\d/.test(hm)){
+      const t = hm.split(':'); hh = Number(t[0]); mm = Number(t[1]);
+    }
+    // Costruiamo ISO locale
+    const pad = n => String(n).padStart(2,'0');
+    const iso = `${y}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:00`;
+    const date = new Date(iso);
+    return isNaN(date.getTime()) ? null : date;
+  }
+
+  function normalizeKey(s){ return (s||'').trim(); }
+
+  function pick(row, keyMap){
+    const o = {};
+    for(const [k, aliasList] of Object.entries(keyMap)){
+      let v = '';
+      for(const alias of aliasList){
+        if(row.hasOwnProperty(alias)) { v = row[alias]; break; }
+      }
+      o[k] = (v||'').toString().trim();
+    }
+    return o;
+  }
+
+  // === RENDER ===
+  function render(list, {onlyUpcoming=false}={}){
+    const now = new Date();
+    const out = [];
+
+    const upcoming = list
+      .filter(g => g.dateObj)
+      .filter(g => !onlyUpcoming || g.dateObj >= new Date(now.getFullYear(), now.getMonth(), now.getDate()))
+      .sort((a,b)=> a.dateObj - b.dateObj);
+
+    if(onlyUpcoming && upcoming.length===0){
+      $('#status').classList.remove('hidden');
+      $('#status').textContent = 'Nessuna partita futura trovata.';
+    } else {
+      $('#status').classList.add('hidden');
+      $('#status').textContent = '';
+    }
+
+    for(const g of upcoming){
+      const sede = (g.sede||'').toLowerCase().includes('casa') ? 'casa' : 'trasferta';
+      const cls = `card ${sede}`;
+      const giorno = it.format(g.dateObj);
+      const orario = itTime.format(g.dateObj);
+
+      const giocatori = (g.giocatore||'').split(/[;,\n]/).map(s=>s.trim()).filter(Boolean);
+      const giocatoriHtml = giocatori.map(name=>{
+        const key = name.toLowerCase();
+        const t = key.includes('viki') ? 'viki' : key.includes('mati') ? 'mati' : 'altro';
+        const base = t==='viki' ? 'label viki' : t==='mati' ? 'label mati' : 'label';
+        return `<span class="${base}" aria-label="Giocatore: ${name}">${name}</span>`;
+      }).join('');
+
+      const sedeChip = sede==='casa' ? '<span class="chip tag-casa" aria-label="Partita in casa">CASA</span>' : '<span class="chip tag-trasferta" aria-label="Partita in trasferta">TRASFERTA</span>';
+
+      out.push(`
+        <article class="${cls}" role="article" aria-label="Partita del ${giorno} alle ${orario}">
+          <div class="row">
+            <div class="left">
+              <div class="topline">
+                <span class="badge-sede">${g.campionato || '—'}</span>
+                <span class="when">${giorno} • ${orario}</span>
+              </div>
+              <div class="teams">
+                <span class="home">${g.squadraCasa || '—'}</span>
+                <span class="vs">vs</span>
+                <span class="away">${g.squadraOspite || '—'}</span>
+              </div>
+              <div class="labels">${giocatoriHtml}</div>
+              <div class="place">
+                ${g.maps ? `<a class="imp" href="${g.maps}" target="_blank" rel="noopener">📍 ${g.impianto || 'Impianto'} →</a>` : `<span class="imp">📍 ${g.impianto || 'Impianto'}</span>`}
+                ${g.indirizzo ? `<a class="addr" href="${g.maps || '#'}" target="_blank" rel="noopener">${g.indirizzo}</a>` : ''}
+              </div>
+              <div class="meta">${g.gara ? `Gara: ${g.gara}`:''}</div>
+            </div>
+            <div class="right">${sedeChip}</div>
+          </div>
+        </article>`);
+    }
+
+    $('#list').innerHTML = out.join('\n');
+  }
+
+  // === BOOT ===
+  async function fetchCSVwithFallback(urls){
+    let lastErr;
+    for(const url of urls){
+      try{
+        const res = await fetch(url, {cache:'no-store'});
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const txt = await res.text();
+        if(!txt || txt.trim().length<3) throw new Error('CSV vuoto');
+        return txt;
+      }catch(e){ lastErr = e; }
+    }
+    throw lastErr || new Error('Impossibile scaricare il CSV');
+  }
+
+  async function load(){
+    try{
+      const csv = await fetchCSVwithFallback(CSV_URLS);
+      const rows = csvParse(csv);
+      const headers = rows.shift().map(h=>h.trim());
+
+      const objects = rows
+        .filter(r=>r.some(x=> (x||'').toString().trim()!=='') )
+        .map(r=> Object.fromEntries(headers.map((h,i)=>[h, (r[i]||'').toString().trim()])) );
+
+      // Mappa colonne del tuo file
+      const KEYMAP = {
+        campionato: ["#Campionato", "Campionato"],
+        gara: ["Gara"],
+        data: ["Data","data"],
+        ora: ["Ora","ora"],
+        dataEstesa: ["Data estesa"],
+        sede: ["Sede"],
+        giocatore: ["Giocatore","Giocatori"],
+        squadraCasa: ["SquadraCasa","Casa","Squadra Casa"],
+        squadraOspite: ["SquadraOspite","Ospite","Squadra Ospite"],
+        impianto: ["Impianto"],
+        indirizzo: ["IndirizzoImpianto","Indirizzo"],
+        maps: ["MapsURL","Maps","Link Maps"]
+      };
+
+      const games = objects.map(row=>{
+        const g = pick(row, KEYMAP);
+        g.dateObj = toDateISO(g.data || g.dataEstesa, g.ora);
+        return g;
+      }).filter(g=>g.dateObj);
+
+      // Stato e rendering iniziale
+      render(games, {onlyUpcoming:false});
+
+      // Filtri
+      $('#btn-upcoming').addEventListener('click', ()=>{
+        render(games, {onlyUpcoming:true});
+        $('#btn-upcoming').classList.replace('btn-outline','btn-primary');
+        $('#btn-all').classList.replace('btn-primary','btn-outline');
+      });
+      $('#btn-all').addEventListener('click', ()=>{
+        render(games, {onlyUpcoming:false});
+        $('#btn-all').classList.replace('btn-outline','btn-primary');
+        $('#btn-upcoming').classList.replace('btn-primary','btn-outline');
+      });
+
+      // Stato pulsanti iniziale
+      $('#btn-all').classList.replace('btn-outline','btn-primary');
+    } catch(err){
+      const msg = `Non riesco a leggere il foglio. Assicurati che sia pubblico o "Pubblicato sul web" in CSV. Errore: ${err?.message || err}`;
+      const box = $('#status');
+      box.textContent = msg; box.classList.remove('hidden');
+    }
+  }
+
+  load();
+  </script>
+</body>
+</html>
