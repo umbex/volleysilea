@@ -128,7 +128,7 @@
   </div>
 
   <script>
-  // === CONFIG ===
+  // === CONFIG === https://docs.google.com/spreadsheets/d/1TL4uYGiCLY1pzWM7omzWGiUVxPBnKb0wAAOAesQXZXc/edit?usp=sharing
   const SHEET_ID = "1TL4uYGiCLY1pzWM7omzWGiUVxPBnKb0wAAOAesQXZXc";
   const SHEET_NAME = "FIPAV"; // aggiorna se il nome è diverso
   const CSV_URLS = [
@@ -140,7 +140,8 @@
   // === STATE ===
   let selectedCampionati = new Set(); // Set of selected campionato values
   let allCampionati = new Set(); // Set of all available campionato values
-  let showGiocatori = true; // Whether to show giocatori labels (default: true)
+  let showGiocatori = false; // Whether to show giocatori labels (default: false)
+  let filterByGiocatore = false; // Whether to filter matches by giocatore presence
 
   // === LOCAL STORAGE ===
   const STORAGE_KEY = 'volleysilea-campionato-selection';
@@ -184,7 +185,16 @@
 
   function checkQueryParams(){
     const urlParams = new URLSearchParams(window.location.search);
-    showGiocatori = urlParams.get('g') !== 'no';
+    const gParam = urlParams.get('g');
+    
+    if (gParam === 'yes') {
+      showGiocatori = true;
+      filterByGiocatore = true;
+    } else {
+      // If parameter is missing or any other value, hide labels and show all matches
+      showGiocatori = false;
+      filterByGiocatore = false;
+    }
   }
 
   function capWeekdayShort(dStr){
@@ -251,6 +261,12 @@
         const campionato = (g.campionato || '').trim();
         return selectedCampionati.has(campionato);
       })
+      .filter(g => {
+        // Filter by giocatore if g=yes parameter is present
+        if (!filterByGiocatore) return true;
+        const giocatore = (g.giocatore || '').trim();
+        return giocatore.length > 0;
+      })
       .sort((a,b)=> a.dateObj - b.dateObj);
 
     const box = $('#status');
@@ -302,21 +318,26 @@
 
   // === CAMPIONATO FILTER ===
   function createCampionatoDropdown(games){
-    const uniqueCampionati = [...new Set(games.map(g => (g.campionato || '').trim()).filter(Boolean))];
+    // Filter games by giocatore if needed
+    const gamesToUse = filterByGiocatore 
+      ? games.filter(g => (g.giocatore || '').trim().length > 0)
+      : games;
+    
+    const uniqueCampionati = [...new Set(gamesToUse.map(g => (g.campionato || '').trim()).filter(Boolean))];
     
     if(uniqueCampionati.length === 0) {
       $('#campionato-btn').style.display = 'none';
       return;
     }
     
-    // Store all available campionati
+    // Store all available campionati (filtered by giocatore if needed)
     allCampionati = new Set(uniqueCampionati);
     
     // Load saved selection from localStorage, or default to all selected
     const savedSelection = loadCampionatoSelection();
     selectedCampionati = new Set();
     
-    // Only restore saved selections that still exist in current data
+    // Only restore saved selections that still exist in current filtered data
     for (const campionato of savedSelection) {
       if (allCampionati.has(campionato)) {
         selectedCampionati.add(campionato);
