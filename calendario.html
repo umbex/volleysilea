@@ -82,16 +82,24 @@
   </div>
 
   <script>
+  // === CONFIG ===
   const SHEET_ID = "1TL4uYGiCLY1pzWM7omzWGiUVxPBnKb0wAAOAesQXZXc";
-  const SHEET_NAME = "Tab";
+  const SHEET_NAME = "Tab"; // aggiorna se il nome è diverso
   const CSV_URLS = [
     `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`,
-    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`, // fallback: primo foglio
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`      // fallback generico
   ];
 
+  // === UTILS ===
   const $ = (sel, root=document) => root.querySelector(sel);
   const itDate = new Intl.DateTimeFormat('it-IT', { weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
   const itTime = new Intl.DateTimeFormat('it-IT', { hour:'2-digit', minute:'2-digit'});
+
+  function capWeekdayShort(dStr){
+    // Trasforma "dom 05/12/2025" in "Dom 05/12/2025"
+    return dStr.replace(/^(\p{L})(\p{L}{2})/u, (_,a,b)=>a.toUpperCase()+b.toLowerCase());
+  }
 
   function csvParse(str){
     const rows = [];
@@ -147,24 +155,27 @@
     return o;
   }
 
+  // === RENDER ===
   function render(list, {onlyUpcoming=false}={}){
     const now = new Date();
-    const out = [];
-    const filtered = list.filter(g => g.dateObj && (!onlyUpcoming || g.dateObj >= new Date(now.getFullYear(), now.getMonth(), now.getDate()))).sort((a,b)=> a.dateObj - b.dateObj);
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const filtered = list
+      .filter(g => g.dateObj && (!onlyUpcoming || g.dateObj >= midnight))
+      .sort((a,b)=> a.dateObj - b.dateObj);
 
+    const box = $('#status');
     if(onlyUpcoming && filtered.length===0){
-      $('#status').classList.remove('hidden');
-      $('#status').textContent = 'Nessuna partita futura trovata.';
-    } else {
-      $('#status').classList.add('hidden');
-      $('#status').textContent = '';
-    }
+      box.classList.remove('hidden');
+      box.textContent = 'Nessuna partita futura trovata.';
+    } else { box.classList.add('hidden'); box.textContent=''; }
 
-    for(const g of filtered){
-      const sede = (g.sede||'').toLowerCase().includes('casa') ? 'casa' : 'trasferta';
-      const cls = `card ${sede}`;
-      const giorno = itDate.format(g.dateObj).replace(',', '');
+    const out = filtered.map(g=>{
+      const sedeIsCasa = (g.sede||'').toLowerCase().includes('casa');
+      const cls = `card ${sedeIsCasa? 'casa':'trasferta'}`;
+      const giornoRaw = itDate.format(g.dateObj).replace(',', '');
+      const giorno = capWeekdayShort(giornoRaw); // es. Dom 05/12/2025
       const orario = itTime.format(g.dateObj);
+
       const giocatori = (g.giocatore||'').split(/[;\n,]/).map(s=>s.trim()).filter(Boolean);
       const giocatoriHtml = giocatori.map(name=>{
         const key = name.toLowerCase();
@@ -173,11 +184,11 @@
         return `<span class="${base}">${name}</span>`;
       }).join('');
 
-      out.push(`
+      return `
         <article class="${cls}">
           <div class="topline">
             <span class="when">${giorno} • ${orario}</span>
-            <span class="badge-sede">${sede==='casa'?'CASA':'TRASFERTA'}</span>
+            <span class="badge-sede">${sedeIsCasa ? 'CASA' : 'TRASFERTA'}</span>
           </div>
           <div class="teams-row">
             <div class="team-name team-left">${g.squadraCasa || '—'}</div>
@@ -190,24 +201,82 @@
             ${g.indirizzo ? `<a class="addr" href="${g.maps || '#'}" target="_blank" rel="noopener">${g.indirizzo}</a>` : ''}
           </div>
           <div class="labels">${giocatoriHtml}</div>
-        </article>`);
-    }
+        </article>`;
+    }).join('\n');
 
-    $('#list').innerHTML = out.join('\n');
+    $('#list').innerHTML = out;
   }
 
+  // === BOOT ===
   async function fetchCSVwithFallback(urls){
+    let lastErr;
     for(const url of urls){
       try{
         const res = await fetch(url, {cache:'no-store'});
-        if(res.ok){ const t = await res.text(); if(t.trim().length>3) return t; }
-      }catch(e){ }
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const txt = await res.text();
+        if(txt && txt.trim().length>3) return txt;
+      }catch(e){ lastErr = e; }
     }
-    throw new Error('Errore nel recupero CSV');
+    throw lastErr || new Error('Errore nel recupero CSV');
   }
 
   async function load(){
-    const csv = await fetchCSVwithFallback(CSV_URLS);
-    const rows = csvParse(csv);
-    const headers = rows.shift().map(h=>h.trim());
-    const objects = rows.filter(r=>r.some(x=>(x||'').toString().trim()!==''))
+    try{
+      const csv = await fetchCSVwithFallback(CSV_URLS);
+      const rows = csvParse(csv);
+      const headers = rows.shift().map(h=>h.trim());
+      const objects = rows
+        .filter(r=>r.some(x=> (x||'').toString().trim()!==''))
+        .map(r=> Object.fromEntries(headers.map((h,i)=>[h, (r[i]||'').toString().trim()])) );
+
+      const KEYMAP = {
+        campionato:["#Campionato","Campionato"],
+        data:["Data","data"],
+        ora:["Ora","ora"],
+        dataEstesa:["Data estesa"],
+        sede:["Sede"],
+        giocatore:["Giocatore","Giocatori"],
+        squadraCasa:["SquadraCasa","Casa","Squadra Casa"],
+        squadraOspite:["SquadraOspite","Ospite","Squadra Ospite"],
+        impianto:["Impianto"],
+        indirizzo:["IndirizzoImpianto","Indirizzo"],
+        maps:["MapsURL","Maps","Link Maps"]
+      };
+
+      const games = objects.map(row=>{
+        const g = {};
+        for(const k in KEYMAP){
+          const aliases = KEYMAP[k];
+          g[k] = '';
+          for(const a of aliases){ if(row[a]!==undefined){ g[k] = row[a]; break; } }
+        }
+        g.dateObj = toDateISO(g.data || g.dataEstesa, g.ora);
+        return g;
+      }).filter(g=>g.dateObj);
+
+      // Render "Partite da giocare" di default
+      render(games,{onlyUpcoming:true});
+
+      // Filtri
+      $('#btn-upcoming').addEventListener('click',()=>{
+        render(games,{onlyUpcoming:true});
+        $('#btn-upcoming').classList.replace('btn-outline','btn-primary');
+        $('#btn-all').classList.replace('btn-primary','btn-outline');
+      });
+      $('#btn-all').addEventListener('click',()=>{
+        render(games,{onlyUpcoming:false});
+        $('#btn-all').classList.replace('btn-outline','btn-primary');
+        $('#btn-upcoming').classList.replace('btn-primary','btn-outline');
+      });
+    } catch(err){
+      const box = $('#status');
+      box.textContent = `Non riesco a leggere il foglio. Verifica che sia pubblico o pubblicato in CSV. Dettagli: ${err?.message||err}`;
+      box.classList.remove('hidden');
+    }
+  }
+
+  load();
+  </script>
+</body>
+</html>
