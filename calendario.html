@@ -68,6 +68,15 @@
     }
 
     .notice{padding:12px 14px;border-radius:12px;background:#FEF3C7;border:1px solid #FCD34D;color:#7C2D12;margin:8px 0 16px}
+    .notice.loading{background:#E0F2FE;border-color:#0EA5E9;color:#0C4A6E}
+    .loading-dots{display:inline-block;animation:loading-dots 1.5s infinite}
+    @keyframes loading-dots{
+      0%,20%{content:''}
+      40%{content:'.'}
+      60%{content:'..'}
+      80%,100%{content:'...'}
+    }
+    .loading-dots::after{content:'';animation:loading-dots 1.5s infinite}
     .hidden{display:none !important}
 
     footer.note{margin-top:18px;text-align:center;font-size:12px;color:#6B7280;opacity:.6}
@@ -225,6 +234,12 @@
   }
 
   async function load(){
+    // Mostra messaggio di loading
+    const box = $('#status');
+    box.classList.remove('hidden');
+    box.classList.add('loading');
+    box.innerHTML = 'Attendi che aggiorno i calendari<span class="loading-dots"></span>';
+    
     try{
       const csv = await fetchCSVwithFallback(CSV_URLS);
       const rows = csvParse(csv);
@@ -258,6 +273,11 @@
         return g;
       }).filter(g=>g.dateObj);
 
+      // Nascondi messaggio di loading e renderizza i dati
+      box.classList.add('hidden');
+      box.classList.remove('loading');
+      box.textContent = '';
+      
       // Render "Partite da giocare" di default
       render(games,{onlyUpcoming:true});
 
@@ -273,7 +293,8 @@
         $('#btn-upcoming').classList.replace('btn-primary','btn-outline');
       });
     } catch(err){
-      const box = $('#status');
+      // Nascondi loading e mostra errore
+      box.classList.remove('loading');
       box.textContent = `Non riesco a leggere il foglio. Verifica che sia pubblico o pubblicato in CSV. Dettagli: ${err?.message||err}`;
       box.classList.remove('hidden');
     }
