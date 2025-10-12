@@ -134,25 +134,18 @@
     return rows;
   }
 
-  function toDateISO(mdy, hm){
-    if(!mdy) return null;
-    let d, m, y;
-    if(mdy.includes('/')){
-      const parts = mdy.split('/').map(s=>s.trim());
-      if(Number(parts[0])>12){ d=Number(parts[0]); m=Number(parts[1]); y=Number(parts[2]); }
-      else if(Number(parts[1])>12){ d=Number(parts[1]); m=Number(parts[0]); y=Number(parts[2]); }
-      else { m=Number(parts[0]); d=Number(parts[1]); y=Number(parts[2]); }
-    }
-    let hh=12, mm=0;
-    if(hm && /\d\d?:\d\d/.test(hm)){
-      const t = hm.split(':'); hh = Number(t[0]); mm = Number(t[1]);
-    }
-    const pad = n => String(n).padStart(2,'0');
-    const iso = `${y}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:00`;
-    const date = new Date(iso);
+  // Forza formato DD/MM/YYYY
+  function toDateISO(dmy, hm){
+    if(!dmy) return null;
+    const [d,m,y] = dmy.split(/[\\/.-]/).map(n=>parseInt(n,10));
+    if(!d || !m || !y) return null;
+    let [hh,mm] = (hm || "12:00").split(':').map(n=>parseInt(n,10));
+    if(isNaN(hh)) hh=12;
+    if(isNaN(mm)) mm=0;
+    const date = new Date(y, m-1, d, hh, mm);
     return isNaN(date.getTime()) ? null : date;
   }
-
+    
   function pick(row, keyMap){
     const o = {};
     for(const [k, aliasList] of Object.entries(keyMap)){
