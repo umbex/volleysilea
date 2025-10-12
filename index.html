@@ -187,7 +187,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const gParam = urlParams.get('g');
     
-    if (gParam === 'yes') {
+    if (gParam === 'vikimati') {
       showGiocatori = true;
       filterByGiocatore = true;
     } else {
@@ -262,7 +262,7 @@
         return selectedCampionati.has(campionato);
       })
       .filter(g => {
-        // Filter by giocatore if g=yes parameter is present
+        // Filter by giocatore if g=vikimati parameter is present
         if (!filterByGiocatore) return true;
         const giocatore = (g.giocatore || '').trim();
         return giocatore.length > 0;
