@@ -50,6 +50,7 @@
 
     .topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:700;font-size:1rem}
     .when{color:#111;}
+    .topline-right{display:flex;align-items:center;gap:8px}
     .badge-sede{border-radius:999px;padding:6px 10px;font-size:0.78rem;font-weight:700;color:#fff}
     .badge-sede.casa{background:var(--azzurro)}
     .badge-sede.trasferta{background:var(--grigio-700)}
@@ -68,7 +69,7 @@
     .imp{font-weight:700}
     .addr{font-size:0.98rem;color:#374151}
 
-    .labels{position:absolute;bottom:10px;right:14px;display:flex;gap:6px;}
+    .labels{display:flex;gap:6px;}
     .labels.hidden{display:none}
     .label{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:6px 10px;font-weight:800;font-size:0.78rem;line-height:1;border:1px solid rgba(0,0,0,.06)}
     .label.viki{background: var(--viola); color: #fff}
@@ -235,8 +236,10 @@
         <article class="${cls}">
           <div class="topline">
             <span class="when">${giorno} • ${orario}</span>
-            <span class="labels ${showGiocatori ? '' : 'hidden'}">${giocatoriHtml}</span>
-            <span class=\"badge-sede ${sedeIsCasa?'casa':'trasferta'}\">${sedeIsCasa?'CASA':'FUORI'}</span>
+            <div class="topline-right">
+              <span class="labels ${showGiocatori ? '' : 'hidden'}">${giocatoriHtml}</span>
+              <span class=\"badge-sede ${sedeIsCasa?'casa':'trasferta'}\">${sedeIsCasa?'CASA':'FUORI'}</span>
+            </div>
           </div>
           <div class="teams-row">
             <div class="team-name team-left">${g.squadraCasa || '—'}</div>
@@ -248,7 +251,7 @@
             ${g.maps ? `<a class="imp" href="${g.maps}" target="_blank" rel="noopener">📍 ${g.impianto || 'Impianto'} →</a>` : `<span class="imp">📍 ${g.impianto || 'Impianto'}</span>`}
           <!--   ${g.indirizzo ? `<a class="addr" href="${g.maps || '#'}" target="_blank" rel="noopener">${g.indirizzo}</a>` : ''} -->
           </div>
-          <div class="labels ${showGiocatori ? '' : 'hidden'}">${giocatoriHtml}</div>
+          
         </article>`;
     }).join('\n');
 
