@@ -245,7 +245,7 @@
           <div class="campionato">${g.campionato || ''}</div>
           <div class="place">
             ${g.maps ? `<a class="imp" href="${g.maps}" target="_blank" rel="noopener">📍 ${g.impianto || 'Impianto'} →</a>` : `<span class="imp">📍 ${g.impianto || 'Impianto'}</span>`}
-            ${g.indirizzo ? `<a class="addr" href="${g.maps || '#'}" target="_blank" rel="noopener">${g.indirizzo}</a>` : ''}
+          <!--   ${g.indirizzo ? `<a class="addr" href="${g.maps || '#'}" target="_blank" rel="noopener">${g.indirizzo}</a>` : ''} -->
           </div>
           <div class="labels ${showGiocatori ? '' : 'hidden'}">${giocatoriHtml}</div>
         </article>`;
