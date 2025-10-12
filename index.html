@@ -1,645 +1,282 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendario Volley Silea</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Volley Silea</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; padding: 1rem; }
-    .title-main {
-      text-align: center;
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: #0066cc;
-      margin-top: 0.5rem;
-      margin-bottom: 1.2rem;
-      letter-spacing: 1px;
-      text-shadow: 0 2px 8px #d2eaff;
+    :root{
+      --azzurro:#0EA5E9;
+      --azzurro-50:#E0F2FE;
+      --azzurro-600:#0284C7;
+      --grigio-50:#F3F4F6;
+      --grigio-300:#D1D5DB;
+      --viola:#7C3AED;
+      --giallo:#F59E0B;
+      --nero:#0B1220;
+      --bianco:#FFFFFF;
     }
-    .controls { display: flex; gap: .5rem; margin-bottom: .75rem; justify-content: center; }
-    .btn { padding: .5rem .75rem; border-radius: 8px; border: 1px solid #ddd; background: #fff; font-size: .9rem; }
-    .btn.active { background: #0066cc; color: #fff; border-color: #0066cc; }
-    .notice { font-size: 0.9rem; color: #444; margin: 0 0 0.5rem 0; }
-    #list { }
-    .match { background: #fff; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .match.home { background: #e6f2ff; }
-    .date-time { font-weight: bold; color: #d35400; margin-bottom: 0.5rem; }
-    .teams { font-size: 1rem; margin-bottom: 0.5rem; }
-    .teams span { display: block; }
-    .venue { font-size: 0.9rem; color: #555; margin-bottom: 0.3rem; }
-    .venue a { color: #0066cc; text-decoration: none; }
-    .venue a:hover { text-decoration: underline; }
-    .campionato { font-size: 0.8rem; color: #999; margin-top: 0.3rem; }
-    .player-tag { display: inline-block; padding: 2px 6px; margin-left: 8px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; vertical-align: middle; }
-    .mati { background: #ffeb3b; color: #000; }
-    .viki { background: #6a1b9a; color: #fff; }
+    html,body{margin:0;padding:0;background:#fff;color:var(--nero);font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";}
+    .app{max-width:780px;margin:0 auto;padding:16px 14px 100px;}
+    header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg, #fff 80%, rgba(255,255,255,0));padding:16px 0 10px;}
+    h1{margin:0 0 10px;font-weight:800;letter-spacing:0.2px;font-size:1.45rem;line-height:1.2;color:var(--azzurro);}
+    .subtitle{font-size:0.98rem;color:#4B5563;margin-top:4px}
+
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}
+    .btn{appearance:none;border:0;border-radius:999px;padding:10px 14px;font-weight:700;font-size:0.98rem;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06),0 1px 1px rgba(0,0,0,.03);transition:transform .06s ease, background .2s ease, box-shadow .2s ease;}
+    .btn:active{transform:scale(0.98)}
+    .btn-primary{background:var(--azzurro);color:var(--bianco);} 
+    .btn-outline{background:var(--bianco);color:var(--azzurro-600);border:2px solid var(--azzurro);} 
+
+    .list{display:grid;gap:12px}
+    .card{border-radius:18px;padding:14px;border:1px solid rgba(2,132,199,.08);box-shadow:0 1px 2px rgba(2,132,199,.06),0 12px 24px -24px rgba(0,0,0,.25);position:relative;}
+    .card.casa{background:var(--azzurro-50)}
+    .card.trasferta{background:var(--grigio-50)}
+
+    .topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:700;font-size:1rem}
+    .when{color:#111;}
+    .badge-sede{background:var(--azzurro);color:#fff;border-radius:999px;padding:6px 10px;font-size:0.8rem;}
+
+    .teams-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;}
+    .team-name{flex:1;text-align:center;font-size:1.1rem;font-weight:700;}
+    .team-left{text-align:right;}
+    .team-right{text-align:left;}
+    .vs{font-size:1rem;font-weight:600;color:#4B5563;min-width:40px;text-align:center;}
+
+    .campionato{display:inline-block;margin:6px auto 10px;padding:4px 10px;background:var(--azzurro-600);color:#fff;border-radius:999px;font-size:0.78rem;font-weight:700;}
+
+    .place{display:flex;flex-direction:column;gap:4px;margin-top:4px;text-align:center;}
+    .place a{color:#0f172a;text-decoration:none;border-bottom:2px solid transparent}
+    .place a:hover{border-bottom-color:currentColor}
+    .imp{font-weight:700}
+    .addr{font-size:0.98rem;color:#374151}
+
+    .labels{position:absolute;bottom:10px;right:14px;display:flex;gap:6px;}
+    .label{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:6px 10px;font-weight:800;font-size:0.78rem;line-height:1;border:1px solid rgba(0,0,0,.06)}
+    .label.viki{background: var(--viola); color: #fff}
+    .label.mati{background: var(--giallo); color: #111}
+
+    @media (min-width:480px){
+      h1{font-size:1.6rem}
+      .team-name{font-size:1.2rem}
+    }
+
+    .notice{padding:12px 14px;border-radius:12px;background:#FEF3C7;border:1px solid #FCD34D;color:#7C2D12;margin:8px 0 16px}
+    .hidden{display:none !important}
   </style>
 </head>
 <body>
-  <div class="title-main">Volley Silea - Calendario</div>
-  <div class="controls">
-    <button id="btn-future" class="btn">Mostra partite future</button>
-    <button id="btn-all" class="btn">Mostra tutte</button>
+  <div class="app">
+    <header>
+      <h1>Volley Silea 2025/2026</h1>
+      <div class="subtitle">Filtra le partite qui sotto.</div>
+      <div class="controls" role="group" aria-label="Filtri calendario">
+        <button id="btn-upcoming" class="btn btn-primary" type="button">Partite da giocare</button>
+        <button id="btn-all" class="btn btn-outline" type="button">Mostra tutte</button>
+      </div>
+    </header>
+
+    <div id="status" class="notice hidden" aria-live="polite"></div>
+
+    <section id="list" class="list" aria-live="polite"></section>
   </div>
-  <div id="list">
-    
-    <div class="match home" data-date="2025-09-27">
-      <div class="date-time">27/09/2025 – 17:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>F.LLI MORO VOLLEY SILEA 2D</strong></span>
-        <span>vs</span>
-        <span>FADIEL IT.MONASTIER FOSSALTA1D</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Coppa Tre.Uno I-II Divisione Femminile - Girone A</div>
-    </div>
-    
-    <div class="match " data-date="2025-09-28">
-      <div class="date-time">28/09/2025 – 15:00 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span>MONTEVOLLEY BLU ÉLITE</span>
-        <span>vs</span>
-        <span><strong>F.LLI MORO VOLLEY SILEA U16 ÉL</strong></span>
-      </div>
-      <div class="venue">Palazzetto dello Sport Legrenzi - MONTEBELLUNA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palazzetto+dello+Sport+Legrenzi+-+MONTEBELLUNA+%28TV%29+Via+S.M.+in+Colle" target="_blank">📍 Via S.M. in Colle</a>
-      </div>
-      <div class="campionato">Under 16 Femminile Elite</div>
-    </div>
-    
-    <div class="match " data-date="2025-10-04">
-      <div class="date-time">04/10/2025 – 20:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span>PALLAVOLO NERVESA 1^DIV</span>
-        <span>vs</span>
-        <span><strong>F.LLI MORO VOLLEY SILEA 2D</strong></span>
-      </div>
-      <div class="venue">Palestra Scuole Medie - NERVESA DELLA BATTAGLIA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palestra+Scuole+Medie+-+NERVESA+DELLA+BATTAGLIA+%28TV%29+Via+Bombardieri+del+Re%2C+10" target="_blank">📍 Via Bombardieri del Re, 10</a>
-      </div>
-      <div class="campionato">Coppa Tre.Uno I-II Divisione Femminile - Girone A</div>
-    </div>
-    
-    <div class="match " data-date="2025-10-04">
-      <div class="date-time">04/10/2025 – 20:30 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span>VOLLEY MARCA 2^DIV</span>
-        <span>vs</span>
-        <span><strong>VOLLEY SILEA 2D</strong></span>
-      </div>
-      <div class="venue">Palazzetto dello Sport - PAESE (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palazzetto+dello+Sport+-+PAESE+%28TV%29+Piazza+San+Lorenzo" target="_blank">📍 Piazza San Lorenzo</a>
-      </div>
-      <div class="campionato">Coppa Tre.Uno I-II Divisione Femminile - Girone E</div>
-    </div>
-    
-    <div class="match home" data-date="2025-10-05">
-      <div class="date-time">05/10/2025 – 11:30 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span><strong>LAGOVERDE SILEA U18</strong></span>
-        <span>vs</span>
-        <span>VOLLEY MOGLIANO VERDE</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 18 Femminile - Girone C</div>
-    </div>
-    
-    <div class="match home" data-date="2025-10-05">
-      <div class="date-time">05/10/2025 – 16:00 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>F.LLI MORO VOLLEY SILEA U16 ÉL</strong></span>
-        <span>vs</span>
-        <span>SANVE U16 ÉLITE</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 16 Femminile Elite</div>
-    </div>
-    
-    <div class="match home" data-date="2025-10-05">
-      <div class="date-time">05/10/2025 – 18:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>TREVISO ASSICURA SILEA U18 ÉL</strong></span>
-        <span>vs</span>
-        <span>SELEA TLC SAN VENDEMIANO</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 18 Femminile Elite</div>
-    </div>
-    
-    <div class="match home" data-date="2025-10-06">
-      <div class="date-time">06/10/2025 – 20:30 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span><strong>VOLLEY SILEA 2D</strong></span>
-        <span>vs</span>
-        <span>CASIER COPPA TV 1^DIV</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Coppa Tre.Uno I-II Divisione Femminile - Girone E</div>
-    </div>
-    
-    <div class="match " data-date="2025-10-08">
-      <div class="date-time">08/10/2025 – 20:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span>SCP VOLLEY LIMANA ÉL</span>
-        <span>vs</span>
-        <span><strong>TREVISO ASSICURA SILEA U18 ÉL</strong></span>
-      </div>
-      <div class="venue">Palimana - LIMANA (BL)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palimana+-+LIMANA+%28BL%29+Via+Fiabane%2C+3" target="_blank">📍 Via Fiabane, 3</a>
-      </div>
-      <div class="campionato">Under 18 Femminile Elite</div>
-    </div>
-    
-    <div class="match home" data-date="2025-10-11">
-      <div class="date-time">11/10/2025 – 17:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>F.LLI MORO VOLLEY SILEA 2D</strong></span>
-        <span>vs</span>
-        <span>VOLLEY MOGLIANO</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Coppa Tre.Uno I-II Divisione Femminile - Girone A</div>
-    </div>
-    
-    <div class="match home" data-date="2025-10-11">
-      <div class="date-time">11/10/2025 – 21:00 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span><strong>VOLLEY SILEA 2D</strong></span>
-        <span>vs</span>
-        <span>ALBATROS VOLLEY 1^DIV</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Coppa Tre.Uno I-II Divisione Femminile - Girone E</div>
-    </div>
-    
-    <div class="match " data-date="2025-10-12">
-      <div class="date-time">12/10/2025 – 10:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span>SCP VOLLEY LIMANA ÉLITE</span>
-        <span>vs</span>
-        <span><strong>F.LLI MORO VOLLEY SILEA U16 ÉL</strong></span>
-      </div>
-      <div class="venue">Palimana - LIMANA (BL)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palimana+-+LIMANA+%28BL%29+Via+Fiabane%2C+3" target="_blank">📍 Via Fiabane, 3</a>
-      </div>
-      <div class="campionato">Under 16 Femminile Elite</div>
-    </div>
-    
-    <div class="match " data-date="2025-10-12">
-      <div class="date-time">12/10/2025 – 17:30 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span>VOLLEY MARCA</span>
-        <span>vs</span>
-        <span><strong>LAGOVERDE SILEA U18</strong></span>
-      </div>
-      <div class="venue">Palazzetto dello Sport - PAESE (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palazzetto+dello+Sport+-+PAESE+%28TV%29+Piazza+San+Lorenzo" target="_blank">📍 Piazza San Lorenzo</a>
-      </div>
-      <div class="campionato">Under 18 Femminile - Girone C</div>
-    </div>
-    
-    <div class="match " data-date="2025-10-18">
-      <div class="date-time">18/10/2025 – 20:00 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span>TWILS CV72 2^ DIV</span>
-        <span>vs</span>
-        <span><strong>F.LLI MORO VOLLEY SILEA 2D</strong></span>
-      </div>
-      <div class="venue">Palestra Comunale - CESSALTO (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palestra+Comunale+-+CESSALTO+%28TV%29+Via+Einaudi" target="_blank">📍 Via Einaudi</a>
-      </div>
-      <div class="campionato">Coppa Tre.Uno I-II Divisione Femminile - Girone A</div>
-    </div>
-    
-    <div class="match " data-date="2025-10-18">
-      <div class="date-time">18/10/2025 – 20:30 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span>VOLLEY CARBONERA</span>
-        <span>vs</span>
-        <span><strong>VOLLEY SILEA 2D</strong></span>
-      </div>
-      <div class="venue">Palestra Scuole Medie P. da Zara - CARBONERA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palestra+Scuole+Medie+P.+da+Zara+-+CARBONERA+%28TV%29+Via+Roma+56+%28dietro+la+Chiesa%29" target="_blank">📍 Via Roma 56 (dietro la Chiesa)</a>
-      </div>
-      <div class="campionato">Coppa Tre.Uno I-II Divisione Femminile - Girone E</div>
-    </div>
-    
-    <div class="match home" data-date="2025-10-19">
-      <div class="date-time">19/10/2025 – 11:30 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span><strong>LAGOVERDE SILEA U18</strong></span>
-        <span>vs</span>
-        <span>DON BOSCO</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 18 Femminile - Girone C</div>
-    </div>
-    
-    <div class="match home" data-date="2025-10-19">
-      <div class="date-time">19/10/2025 – 16:00 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>F.LLI MORO VOLLEY SILEA U16 ÉL</strong></span>
-        <span>vs</span>
-        <span>ALBATROS VOLLEY BIANCO ÉL</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 16 Femminile Elite</div>
-    </div>
-    
-    <div class="match home" data-date="2025-10-19">
-      <div class="date-time">19/10/2025 – 18:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>TREVISO ASSICURA SILEA U18 ÉL</strong></span>
-        <span>vs</span>
-        <span>MONTEVOLLEY BLU ÉLITE</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 18 Femminile Elite</div>
-    </div>
-    
-    <div class="match " data-date="2025-10-22">
-      <div class="date-time">22/10/2025 – 21:00 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span>DEIRON MONASTIER 1^ D</span>
-        <span>vs</span>
-        <span><strong>VOLLEY SILEA 2D</strong></span>
-      </div>
-      <div class="venue">Palestra Comunale - MONASTIER DI TREVISO (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palestra+Comunale+-+MONASTIER+DI+TREVISO+%28TV%29+Via+XXV+Aprile" target="_blank">📍 Via XXV Aprile</a>
-      </div>
-      <div class="campionato">Coppa Tre.Uno I-II Divisione Femminile - Girone E</div>
-    </div>
-    
-    <div class="match home" data-date="2025-10-25">
-      <div class="date-time">25/10/2025 – 17:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>F.LLI MORO VOLLEY SILEA 2D</strong></span>
-        <span>vs</span>
-        <span>SUSEGANA 2^DIV-U16</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Coppa Tre.Uno I-II Divisione Femminile - Girone A</div>
-    </div>
-    
-    <div class="match home" data-date="2025-10-26">
-      <div class="date-time">26/10/2025 – 16:00 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>F.LLI MORO VOLLEY SILEA U16 ÉL</strong></span>
-        <span>vs</span>
-        <span>VOLLEY MOGLIANO BLU ÉLITE</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 16 Femminile Elite</div>
-    </div>
-    
-    <div class="match home" data-date="2025-10-26">
-      <div class="date-time">26/10/2025 – 18:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>TREVISO ASSICURA SILEA U18 ÉL</strong></span>
-        <span>vs</span>
-        <span>CORTINAEXPRESS IMOCO VOLLEY ÉL</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 18 Femminile Elite</div>
-    </div>
-    
-    <div class="match " data-date="2025-10-31">
-      <div class="date-time">31/10/2025 – 19:00 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span>AZIMUT GIORGIONE ROSSO ÉL</span>
-        <span>vs</span>
-        <span><strong>TREVISO ASSICURA SILEA U18 ÉL</strong></span>
-      </div>
-      <div class="venue">Palestra Giorgione - CASTELFRANCO VENETO (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palestra+Giorgione+-+CASTELFRANCO+VENETO+%28TV%29+Via+Volta" target="_blank">📍 Via Volta</a>
-      </div>
-      <div class="campionato">Under 18 Femminile Elite</div>
-    </div>
-    
-    <div class="match " data-date="2025-11-02">
-      <div class="date-time">02/11/2025 – 11:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span>VOLLEY MOGLIANO BLU ÉLITE</span>
-        <span>vs</span>
-        <span><strong>TREVISO ASSICURA SILEA U18 ÉL</strong></span>
-      </div>
-      <div class="venue">Palestra Olme - MOGLIANO VENETO (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palestra+Olme+-+MOGLIANO+VENETO+%28TV%29+Via+Olme" target="_blank">📍 Via Olme</a>
-      </div>
-      <div class="campionato">Under 18 Femminile Elite</div>
-    </div>
-    
-    <div class="match " data-date="2025-11-02">
-      <div class="date-time">02/11/2025 – 11:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span>AZIMUT GIORGIONE ROSSO ÉL</span>
-        <span>vs</span>
-        <span><strong>F.LLI MORO VOLLEY SILEA U16 ÉL</strong></span>
-      </div>
-      <div class="venue">Palazzetto dello Sport - CASTELFRANCO VENETO (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palazzetto+dello+Sport+-+CASTELFRANCO+VENETO+%28TV%29+Piazzale+Donatori+del+Sangue" target="_blank">📍 Piazzale Donatori del Sangue</a>
-      </div>
-      <div class="campionato">Under 16 Femminile Elite</div>
-    </div>
-    
-    <div class="match " data-date="2025-11-02">
-      <div class="date-time">02/11/2025 – 11:30 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span>ASOLO U18 YOUNG</span>
-        <span>vs</span>
-        <span><strong>LAGOVERDE SILEA U18</strong></span>
-      </div>
-      <div class="venue">Palestra Comunale - RIESE PIO X (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palestra+Comunale+-+RIESE+PIO+X+%28TV%29+Quartiere+Longhin%2C+22C" target="_blank">📍 Quartiere Longhin, 22C</a>
-      </div>
-      <div class="campionato">Under 18 Femminile - Girone C</div>
-    </div>
-    
-    <div class="match home" data-date="2025-11-09">
-      <div class="date-time">09/11/2025 – 11:30 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span><strong>LAGOVERDE SILEA U18</strong></span>
-        <span>vs</span>
-        <span>ZERO BRANCO VOLLEY</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 18 Femminile - Girone C</div>
-    </div>
-    
-    <div class="match home" data-date="2025-11-09">
-      <div class="date-time">09/11/2025 – 16:00 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>F.LLI MORO VOLLEY SILEA U16 ÉL</strong></span>
-        <span>vs</span>
-        <span>CAPPELLA FREGONA SARMEDE ÉL</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 16 Femminile Elite</div>
-    </div>
-    
-    <div class="match home" data-date="2025-11-09">
-      <div class="date-time">09/11/2025 – 18:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>TREVISO ASSICURA SILEA U18 ÉL</strong></span>
-        <span>vs</span>
-        <span>COSTA U18 COSEMA Élite</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 18 Femminile Elite</div>
-    </div>
-    
-    <div class="match " data-date="2025-11-16">
-      <div class="date-time">16/11/2025 – 09:30 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span>VOLLEY MOGLIANO VERDE</span>
-        <span>vs</span>
-        <span><strong>LAGOVERDE SILEA U18</strong></span>
-      </div>
-      <div class="venue">Palestra Olme - MOGLIANO VENETO (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palestra+Olme+-+MOGLIANO+VENETO+%28TV%29+Via+Olme" target="_blank">📍 Via Olme</a>
-      </div>
-      <div class="campionato">Under 18 Femminile - Girone C</div>
-    </div>
-    
-    <div class="match " data-date="2025-11-16">
-      <div class="date-time">16/11/2025 – 15:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span>E.V.CARINATESE GIALLA ÉL</span>
-        <span>vs</span>
-        <span><strong>F.LLI MORO VOLLEY SILEA U16 ÉL</strong></span>
-      </div>
-      <div class="venue">Palestra Comunale - SAN ZENONE DEGLI EZZELINI (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palestra+Comunale+-+SAN+ZENONE+DEGLI+EZZELINI+%28TV%29+Via+Don+Mario+Cancian" target="_blank">📍 Via Don Mario Cancian</a>
-      </div>
-      <div class="campionato">Under 16 Femminile Elite</div>
-    </div>
-    
-    <div class="match " data-date="2025-11-16">
-      <div class="date-time">16/11/2025 – 18:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span>E.V. CARINATESE GIALLA ÉL</span>
-        <span>vs</span>
-        <span><strong>TREVISO ASSICURA SILEA U18 ÉL</strong></span>
-      </div>
-      <div class="venue">Palestra Comunale - SAN ZENONE DEGLI EZZELINI (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palestra+Comunale+-+SAN+ZENONE+DEGLI+EZZELINI+%28TV%29+Via+Don+Mario+Cancian" target="_blank">📍 Via Don Mario Cancian</a>
-      </div>
-      <div class="campionato">Under 18 Femminile Elite</div>
-    </div>
-    
-    <div class="match home" data-date="2025-11-23">
-      <div class="date-time">23/11/2025 – 11:30 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span><strong>LAGOVERDE SILEA U18</strong></span>
-        <span>vs</span>
-        <span>VOLLEY MARCA</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 18 Femminile - Girone C</div>
-    </div>
-    
-    <div class="match home" data-date="2025-11-23">
-      <div class="date-time">23/11/2025 – 16:00 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>F.LLI MORO VOLLEY SILEA U16 ÉL</strong></span>
-        <span>vs</span>
-        <span>SOSUS U16 ÉLITE</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 16 Femminile Elite</div>
-    </div>
-    
-    <div class="match home" data-date="2025-11-23">
-      <div class="date-time">23/11/2025 – 18:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>TREVISO ASSICURA SILEA U18 ÉL</strong></span>
-        <span>vs</span>
-        <span>SOSUS U18 ÉLITE</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 18 Femminile Elite</div>
-    </div>
-    
-    <div class="match " data-date="2025-11-25">
-      <div class="date-time">25/11/2025 – 19:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span>U16 ALTAFRATTE STUDIO2 ÉL</span>
-        <span>vs</span>
-        <span><strong>F.LLI MORO VOLLEY SILEA U16 ÉL</strong></span>
-      </div>
-      <div class="venue">Palestra S. E. Falzè - SERNAGLIA DELLA BATTAGLIA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palestra+S.+E.+Falz%C3%A8+-+SERNAGLIA+DELLA+BATTAGLIA+%28TV%29+Via+Borgo+Furo%2C+1" target="_blank">📍 Via Borgo Furo, 1</a>
-      </div>
-      <div class="campionato">Under 16 Femminile Elite</div>
-    </div>
-    
-    <div class="match " data-date="2025-11-27">
-      <div class="date-time">27/11/2025 – 20:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span>U18R SOGNO VENETO V.P. Élite</span>
-        <span>vs</span>
-        <span><strong>TREVISO ASSICURA SILEA U18 ÉL</strong></span>
-      </div>
-      <div class="venue">Palestra Comunale - SERNAGLIA DELLA BATTAGLIA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palestra+Comunale+-+SERNAGLIA+DELLA+BATTAGLIA+%28TV%29+V.le+Rimembranze" target="_blank">📍 V.le Rimembranze</a>
-      </div>
-      <div class="campionato">Under 18 Femminile Elite</div>
-    </div>
-    
-    <div class="match " data-date="2025-11-30">
-      <div class="date-time">30/11/2025 – 11:30 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span>DON BOSCO</span>
-        <span>vs</span>
-        <span><strong>LAGOVERDE SILEA U18</strong></span>
-      </div>
-      <div class="venue">Scuole "Martini" - CASTELFRANCO VENETO (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Scuole+%22Martini%22+-+CASTELFRANCO+VENETO+%28TV%29+Via+Verdi" target="_blank">📍 Via Verdi</a>
-      </div>
-      <div class="campionato">Under 18 Femminile - Girone C</div>
-    </div>
-    
-    <div class="match home" data-date="2025-12-07">
-      <div class="date-time">07/12/2025 – 16:00 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>F.LLI MORO VOLLEY SILEA U16 ÉL</strong></span>
-        <span>vs</span>
-        <span>VALENTINO RICCI IMOCO VOLLEYÉL</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 16 Femminile Elite</div>
-    </div>
-    
-    <div class="match home" data-date="2025-12-07">
-      <div class="date-time">07/12/2025 – 18:30 <span class="player-tag mati">Mati</span></div>
-      <div class="teams">
-        <span><strong>TREVISO ASSICURA SILEA U18 ÉL</strong></span>
-        <span>vs</span>
-        <span>CASIER 18 ELITE</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 18 Femminile Elite</div>
-    </div>
-    
-    <div class="match " data-date="2025-12-14">
-      <div class="date-time">14/12/2025 – 18:30 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span>ZERO BRANCO VOLLEY</span>
-        <span>vs</span>
-        <span><strong>LAGOVERDE SILEA U18</strong></span>
-      </div>
-      <div class="venue">Palazzetto Comunale - ZERO BRANCO (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palazzetto+Comunale+-+ZERO+BRANCO+%28TV%29+Via+Alvaro+1" target="_blank">📍 Via Alvaro 1</a>
-      </div>
-      <div class="campionato">Under 18 Femminile - Girone C</div>
-    </div>
-    
-    <div class="match home" data-date="2025-12-21">
-      <div class="date-time">21/12/2025 – 11:30 <span class="player-tag viki">Viki</span></div>
-      <div class="teams">
-        <span><strong>LAGOVERDE SILEA U18</strong></span>
-        <span>vs</span>
-        <span>ASOLO U18 YOUNG</span>
-      </div>
-      <div class="venue">Palasilea - SILEA (TV)<br>
-        <a href="https://www.google.com/maps/search/?api=1&query=Palasilea+-+SILEA+%28TV%29+Via+Cendon+23%2FD" target="_blank">📍 Via Cendon 23/D</a>
-      </div>
-      <div class="campionato">Under 18 Femminile - Girone C</div>
-    </div>
-    
-  </div>
+
   <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const btnFuture = document.getElementById('btn-future');
-  const btnAll = document.getElementById('btn-all');
-  const today = new Date(); today.setHours(0,0,0,0);
+  // === CONFIG ===
+  const SHEET_ID = "1TL4uYGiCLY1pzWM7omzWGiUVxPBnKb0wAAOAesQXZXc";
+  const SHEET_NAME = "Tab"; // aggiorna se il nome è diverso
+  const CSV_URLS = [
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`,
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`, // fallback: primo foglio
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`      // fallback generico
+  ];
 
-  function safeSet(key, val){ try { localStorage.setItem(key, val); } catch(e){} }
-  function safeGet(key){ try { return localStorage.getItem(key); } catch(e){ return null; } }
+  // === UTILS ===
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const itDate = new Intl.DateTimeFormat('it-IT', { weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
+  const itTime = new Intl.DateTimeFormat('it-IT', { hour:'2-digit', minute:'2-digit'});
 
-  function applyFilter(mode) {
-    document.querySelectorAll('.match').forEach(card => {
-      const dstr = card.getAttribute('data-date');
-      if (!dstr || !/\d{4}-\d{2}-\d{2}/.test(dstr)) { card.style.display=''; return; }
-      const [y,m,d] = dstr.split('-').map(n => parseInt(n,10));
-      const ddate = new Date(y, m-1, d);
-      if (mode === 'future') {
-        card.style.display = (ddate < today) ? 'none' : '';
-      } else {
-        card.style.display = '';
-      }
-    });
-    if (btnFuture) btnFuture.classList.toggle('active', mode === 'future');
-    if (btnAll) btnAll.classList.toggle('active', mode === 'all');
-    safeSet('calendarFilterMode', mode);
-    updateEmptyMessage();
+  function capWeekdayShort(dStr){
+    // Trasforma "dom 05/12/2025" in "Dom 05/12/2025"
+    return dStr.replace(/^(\p{L})(\p{L}{2})/u, (_,a,b)=>a.toUpperCase()+b.toLowerCase());
   }
 
-  function updateEmptyMessage() {
-    const anyVisible = Array.from(document.querySelectorAll('.match')).some(el => el.style.display !== 'none');
-    let msg = document.getElementById('empty-msg');
-    if (!anyVisible) {
-      if (!msg) {
-        msg = document.createElement('div');
-        msg.id = 'empty-msg';
-        msg.className = 'notice empty';
-        msg.textContent = 'Nessuna partita da mostrare con il filtro corrente.';
-        document.getElementById('list').appendChild(msg);
+  function csvParse(str){
+    const rows = [];
+    let i=0, field='', row=[], inQuotes=false;
+    while(i < str.length){
+      const c = str[i];
+      if(inQuotes){
+        if(c === '"'){
+          if(str[i+1] === '"'){ field+='"'; i++; }
+          else { inQuotes=false; }
+        } else { field += c; }
+      } else {
+        if(c === '"') inQuotes = true;
+        else if(c === ','){ row.push(field); field=''; }
+        else if(c === '\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+        else if(c === '\r'){ }
+        else { field += c; }
       }
-    } else if (msg) {
-      msg.remove();
+      i++;
+    }
+    if(field.length>0 || row.length>0) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  function toDateISO(mdy, hm){
+    if(!mdy) return null;
+    let d, m, y;
+    if(mdy.includes('/')){
+      const parts = mdy.split('/').map(s=>s.trim());
+      if(Number(parts[0])>12){ d=Number(parts[0]); m=Number(parts[1]); y=Number(parts[2]); }
+      else if(Number(parts[1])>12){ d=Number(parts[1]); m=Number(parts[0]); y=Number(parts[2]); }
+      else { m=Number(parts[0]); d=Number(parts[1]); y=Number(parts[2]); }
+    }
+    let hh=12, mm=0;
+    if(hm && /\d\d?:\d\d/.test(hm)){
+      const t = hm.split(':'); hh = Number(t[0]); mm = Number(t[1]);
+    }
+    const pad = n => String(n).padStart(2,'0');
+    const iso = `${y}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:00`;
+    const date = new Date(iso);
+    return isNaN(date.getTime()) ? null : date;
+  }
+
+  function pick(row, keyMap){
+    const o = {};
+    for(const [k, aliasList] of Object.entries(keyMap)){
+      let v = '';
+      for(const alias of aliasList){
+        if(row.hasOwnProperty(alias)) { v = row[alias]; break; }
+      }
+      o[k] = (v||'').toString().trim();
+    }
+    return o;
+  }
+
+  // === RENDER ===
+  function render(list, {onlyUpcoming=false}={}){
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const filtered = list
+      .filter(g => g.dateObj && (!onlyUpcoming || g.dateObj >= midnight))
+      .sort((a,b)=> a.dateObj - b.dateObj);
+
+    const box = $('#status');
+    if(onlyUpcoming && filtered.length===0){
+      box.classList.remove('hidden');
+      box.textContent = 'Nessuna partita futura trovata.';
+    } else { box.classList.add('hidden'); box.textContent=''; }
+
+    const out = filtered.map(g=>{
+      const sedeIsCasa = (g.sede||'').toLowerCase().includes('casa');
+      const cls = `card ${sedeIsCasa? 'casa':'trasferta'}`;
+      const giornoRaw = itDate.format(g.dateObj).replace(',', '');
+      const giorno = capWeekdayShort(giornoRaw); // es. Dom 05/12/2025
+      const orario = itTime.format(g.dateObj);
+
+      const giocatori = (g.giocatore||'').split(/[;\n,]/).map(s=>s.trim()).filter(Boolean);
+      const giocatoriHtml = giocatori.map(name=>{
+        const key = name.toLowerCase();
+        const type = key.includes('viki') ? 'viki' : key.includes('mati') ? 'mati' : 'altro';
+        const base = type==='viki' ? 'label viki' : type==='mati' ? 'label mati' : 'label';
+        return `<span class="${base}">${name}</span>`;
+      }).join('');
+
+      return `
+        <article class="${cls}">
+          <div class="topline">
+            <span class="when">${giorno} • ${orario}</span>
+            <span class="badge-sede">${sedeIsCasa ? 'CASA' : 'TRASFERTA'}</span>
+          </div>
+          <div class="teams-row">
+            <div class="team-name team-left">${g.squadraCasa || '—'}</div>
+            <div class="vs">vs</div>
+            <div class="team-name team-right">${g.squadraOspite || '—'}</div>
+          </div>
+          <div class="campionato">${g.campionato || ''}</div>
+          <div class="place">
+            ${g.maps ? `<a class="imp" href="${g.maps}" target="_blank" rel="noopener">📍 ${g.impianto || 'Impianto'} →</a>` : `<span class="imp">📍 ${g.impianto || 'Impianto'}</span>`}
+            ${g.indirizzo ? `<a class="addr" href="${g.maps || '#'}" target="_blank" rel="noopener">${g.indirizzo}</a>` : ''}
+          </div>
+          <div class="labels">${giocatoriHtml}</div>
+        </article>`;
+    }).join('\n');
+
+    $('#list').innerHTML = out;
+  }
+
+  // === BOOT ===
+  async function fetchCSVwithFallback(urls){
+    let lastErr;
+    for(const url of urls){
+      try{
+        const res = await fetch(url, {cache:'no-store'});
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const txt = await res.text();
+        if(txt && txt.trim().length>3) return txt;
+      }catch(e){ lastErr = e; }
+    }
+    throw lastErr || new Error('Errore nel recupero CSV');
+  }
+
+  async function load(){
+    try{
+      const csv = await fetchCSVwithFallback(CSV_URLS);
+      const rows = csvParse(csv);
+      const headers = rows.shift().map(h=>h.trim());
+      const objects = rows
+        .filter(r=>r.some(x=> (x||'').toString().trim()!==''))
+        .map(r=> Object.fromEntries(headers.map((h,i)=>[h, (r[i]||'').toString().trim()])) );
+
+      const KEYMAP = {
+        campionato:["#Campionato","Campionato"],
+        data:["Data","data"],
+        ora:["Ora","ora"],
+        dataEstesa:["Data estesa"],
+        sede:["Sede"],
+        giocatore:["Giocatore","Giocatori"],
+        squadraCasa:["SquadraCasa","Casa","Squadra Casa"],
+        squadraOspite:["SquadraOspite","Ospite","Squadra Ospite"],
+        impianto:["Impianto"],
+        indirizzo:["IndirizzoImpianto","Indirizzo"],
+        maps:["MapsURL","Maps","Link Maps"]
+      };
+
+      const games = objects.map(row=>{
+        const g = {};
+        for(const k in KEYMAP){
+          const aliases = KEYMAP[k];
+          g[k] = '';
+          for(const a of aliases){ if(row[a]!==undefined){ g[k] = row[a]; break; } }
+        }
+        g.dateObj = toDateISO(g.data || g.dataEstesa, g.ora);
+        return g;
+      }).filter(g=>g.dateObj);
+
+      // Render "Partite da giocare" di default
+      render(games,{onlyUpcoming:true});
+
+      // Filtri
+      $('#btn-upcoming').addEventListener('click',()=>{
+        render(games,{onlyUpcoming:true});
+        $('#btn-upcoming').classList.replace('btn-outline','btn-primary');
+        $('#btn-all').classList.replace('btn-primary','btn-outline');
+      });
+      $('#btn-all').addEventListener('click',()=>{
+        render(games,{onlyUpcoming:false});
+        $('#btn-all').classList.replace('btn-outline','btn-primary');
+        $('#btn-upcoming').classList.replace('btn-primary','btn-outline');
+      });
+    } catch(err){
+      const box = $('#status');
+      box.textContent = `Non riesco a leggere il foglio. Verifica che sia pubblico o pubblicato in CSV. Dettagli: ${err?.message||err}`;
+      box.classList.remove('hidden');
     }
   }
 
-  if (btnFuture) btnFuture.addEventListener('click', () => applyFilter('future'));
-  if (btnAll) btnAll.addEventListener('click', () => applyFilter('all'));
-
-  const saved = safeGet('calendarFilterMode') || 'future';
-  applyFilter(saved);
-});
-</script>
+  load();
+  </script>
 </body>
 </html>
