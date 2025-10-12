@@ -191,7 +191,7 @@
         <article class="${cls}">
           <div class="topline">
             <span class="when">${giorno} • ${orario}</span>
-            <span class="badge-sede">${sedeIsCasa ? 'CASA' : 'TRASFERTA'}</span>
+            <span class=\"badge-sede ${sedeIsCasa?'casa':'trasferta'}\">${sedeIsCasa?'CASA':'TRASFERTA'}</span>
           </div>
           <div class="teams-row">
             <div class="team-name team-left">${g.squadraCasa || '—'}</div>
