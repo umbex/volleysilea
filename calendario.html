@@ -26,11 +26,10 @@
     h1{margin:0 0 10px;font-weight:800;letter-spacing:0.2px;font-size:1.45rem;line-height:1.2;color:var(--azzurro);} 
     .subtitle{font-size:0.98rem;color:#4B5563;margin-top:4px}
 
-    .controls{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}
-    .btn{appearance:none;border:0;border-radius:999px;padding:10px 14px;font-weight:700;font-size:0.98rem;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06),0 1px 1px rgba(0,0,0,.03);transition:transform .06s ease, background .2s ease, box-shadow .2s ease;}
-    .btn:active{transform:scale(0.98)}
-    .btn-primary{background:var(--azzurro);color:var(--bianco);} 
-    .btn-outline{background:var(--bianco);color:var(--azzurro-600);border:2px solid var(--azzurro);} 
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px;align-items:center}
+    .checkbox-container{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+    .checkbox-container input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--azzurro)}
+    .checkbox-container label{cursor:pointer;font-weight:600;font-size:0.98rem;color:var(--grigio-700)} 
 
     .list{display:grid;gap:12px}
     .card{border-radius:18px;padding:14px;border:1px solid rgba(2,132,199,.08);box-shadow:0 1px 2px rgba(2,132,199,.06), 0 12px 24px -24px rgba(0,0,0,.25);position:relative;}
@@ -87,9 +86,11 @@
     <header>
       <h1>I campionati Volley Silea</h1>
       <div class="subtitle">Filtra le partite qui sotto.</div>
-      <div class="controls" role="group" aria-label="Filtri calendario">
-        <button id="btn-upcoming" class="btn btn-primary" type="button">Partite da giocare</button>
-        <button id="btn-all" class="btn btn-outline" type="button">Mostra tutte</button>
+      <div class="controls">
+        <div class="checkbox-container">
+          <input type="checkbox" id="show-past-events" />
+          <label for="show-past-events">Mostra le partite già svolte</label>
+        </div>
       </div>
     </header>
 
@@ -97,7 +98,7 @@
 
     <section id="list" class="list" aria-live="polite"></section>
 
-    <footer class="note">Versione v5</footer>
+    <footer class="note">Versione v6</footer>
   </div>
 
   <script>
@@ -281,16 +282,9 @@
       // Render "Partite da giocare" di default
       render(games,{onlyUpcoming:true});
 
-      // Filtri
-      $('#btn-upcoming').addEventListener('click',()=>{
-        render(games,{onlyUpcoming:true});
-        $('#btn-upcoming').classList.replace('btn-outline','btn-primary');
-        $('#btn-all').classList.replace('btn-primary','btn-outline');
-      });
-      $('#btn-all').addEventListener('click',()=>{
-        render(games,{onlyUpcoming:false});
-        $('#btn-all').classList.replace('btn-outline','btn-primary');
-        $('#btn-upcoming').classList.replace('btn-primary','btn-outline');
+      // Filtro checkbox
+      $('#show-past-events').addEventListener('change',(e)=>{
+        render(games,{onlyUpcoming:!e.target.checked});
       });
     } catch(err){
       // Nascondi loading e mostra errore
