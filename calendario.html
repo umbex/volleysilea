@@ -29,7 +29,17 @@
     .controls{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px;align-items:center}
     .checkbox-container{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
     .checkbox-container input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--azzurro)}
-    .checkbox-container label{cursor:pointer;font-weight:600;font-size:0.98rem;color:var(--grigio-700)} 
+    .checkbox-container label{cursor:pointer;font-weight:600;font-size:0.98rem;color:var(--grigio-700)}
+    
+    .campionato-filter{position:relative}
+    .campionato-btn{appearance:none;border:2px solid var(--azzurro);border-radius:999px;padding:8px 12px;font-weight:600;font-size:0.9rem;cursor:pointer;background:var(--bianco);color:var(--azzurro-600);transition:all .2s ease}
+    .campionato-btn:hover{background:var(--azzurro-50)}
+    .campionato-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--bianco);border:1px solid var(--grigio-300);border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:10;margin-top:4px;max-height:200px;overflow-y:auto;display:none}
+    .campionato-dropdown.show{display:block}
+    .campionato-item{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;transition:background .2s ease}
+    .campionato-item:hover{background:var(--grigio-50)}
+    .campionato-item input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--azzurro)}
+    .campionato-item label{cursor:pointer;font-size:0.9rem;color:var(--grigio-700);flex:1} 
 
     .list{display:grid;gap:12px}
     .card{border-radius:18px;padding:14px;border:1px solid rgba(2,132,199,.08);box-shadow:0 1px 2px rgba(2,132,199,.06), 0 12px 24px -24px rgba(0,0,0,.25);position:relative;}
@@ -91,6 +101,10 @@
           <input type="checkbox" id="show-past-events" />
           <label for="show-past-events">Mostra anche le partite già svolte</label>
         </div>
+        <div class="campionato-filter">
+          <button type="button" class="campionato-btn" id="campionato-btn">Scegli il campionato</button>
+          <div class="campionato-dropdown" id="campionato-dropdown"></div>
+        </div>
       </div>
     </header>
 
@@ -110,6 +124,9 @@
     `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`, // fallback: primo foglio
     `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`      // fallback generico
   ];
+
+  // === STATE ===
+  let selectedCampionati = new Set(); // Set of selected campionato values
 
   // === UTILS ===
   const $ = (sel, root=document) => root.querySelector(sel);
@@ -174,6 +191,12 @@
     const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const filtered = list
       .filter(g => g.dateObj && (!onlyUpcoming || g.dateObj >= midnight))
+      .filter(g => {
+        // Filter by campionato if any are selected
+        if(selectedCampionati.size === 0) return true;
+        const campionato = (g.campionato || '').trim();
+        return selectedCampionati.has(campionato);
+      })
       .sort((a,b)=> a.dateObj - b.dateObj);
 
     const box = $('#status');
@@ -218,6 +241,47 @@
     }).join('\n');
 
     $('#list').innerHTML = out;
+  }
+
+  // === CAMPIONATO FILTER ===
+  function createCampionatoDropdown(games){
+    const uniqueCampionati = [...new Set(games.map(g => (g.campionato || '').trim()).filter(Boolean))];
+    
+    if(uniqueCampionati.length === 0) {
+      $('#campionato-btn').style.display = 'none';
+      return;
+    }
+    
+    // Initialize all campionati as selected by default
+    selectedCampionati = new Set(uniqueCampionati);
+    
+    const dropdown = $('#campionato-dropdown');
+    dropdown.innerHTML = uniqueCampionati.map(campionato => `
+      <div class="campionato-item">
+        <input type="checkbox" id="campionato-${campionato.replace(/[^a-zA-Z0-9]/g, '')}" checked />
+        <label for="campionato-${campionato.replace(/[^a-zA-Z0-9]/g, '')}">${campionato}</label>
+      </div>
+    `).join('');
+    
+    // Add event listeners to checkboxes
+    dropdown.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        const campionato = e.target.nextElementSibling.textContent;
+        if(e.target.checked) {
+          selectedCampionati.add(campionato);
+        } else {
+          selectedCampionati.delete(campionato);
+        }
+        // Re-render with current filters
+        const showPast = $('#show-past-events').checked;
+        render(games, {onlyUpcoming: !showPast});
+      });
+    });
+  }
+  
+  function toggleCampionatoDropdown(){
+    const dropdown = $('#campionato-dropdown');
+    dropdown.classList.toggle('show');
   }
 
   // === BOOT ===
@@ -279,12 +343,25 @@
       box.classList.remove('loading');
       box.textContent = '';
       
+      // Create campionato dropdown
+      createCampionatoDropdown(games);
+      
       // Render "Partite da giocare" di default
       render(games,{onlyUpcoming:true});
 
       // Filtro checkbox
       $('#show-past-events').addEventListener('change',(e)=>{
         render(games,{onlyUpcoming:!e.target.checked});
+      });
+      
+      // Campionato dropdown toggle
+      $('#campionato-btn').addEventListener('click', toggleCampionatoDropdown);
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if(!e.target.closest('.campionato-filter')) {
+          $('#campionato-dropdown').classList.remove('show');
+        }
       });
     } catch(err){
       // Nascondi loading e mostra errore
