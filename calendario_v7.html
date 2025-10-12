@@ -67,7 +67,6 @@
     .addr{font-size:0.98rem;color:#374151}
 
     .labels{position:absolute;bottom:10px;right:14px;display:flex;gap:6px;}
-    .labels.hidden{display:none}
     .label{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:6px 10px;font-weight:800;font-size:0.78rem;line-height:1;border:1px solid rgba(0,0,0,.06)}
     .label.viki{background: var(--viola); color: #fff}
     .label.mati{background: var(--giallo); color: #111}
@@ -127,17 +126,11 @@
 
   // === STATE ===
   let selectedCampionati = new Set(); // Set of selected campionato values
-  let showGiocatori = false; // Whether to show giocatori labels
 
   // === UTILS ===
   const $ = (sel, root=document) => root.querySelector(sel);
   const itDate = new Intl.DateTimeFormat('it-IT', { weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
   const itTime = new Intl.DateTimeFormat('it-IT', { hour:'2-digit', minute:'2-digit'});
-
-  function checkQueryParams(){
-    const urlParams = new URLSearchParams(window.location.search);
-    showGiocatori = urlParams.get('m') === 'family';
-  }
 
   function capWeekdayShort(dStr){
     // Trasforma "dom 05/12/2025" in "Dom 05/12/2025"
@@ -242,7 +235,7 @@
             ${g.maps ? `<a class="imp" href="${g.maps}" target="_blank" rel="noopener">📍 ${g.impianto || 'Impianto'} →</a>` : `<span class="imp">📍 ${g.impianto || 'Impianto'}</span>`}
             ${g.indirizzo ? `<a class="addr" href="${g.maps || '#'}" target="_blank" rel="noopener">${g.indirizzo}</a>` : ''}
           </div>
-          <div class="labels ${showGiocatori ? '' : 'hidden'}">${giocatoriHtml}</div>
+          <div class="labels">${giocatoriHtml}</div>
         </article>`;
     }).join('\n');
 
@@ -305,9 +298,6 @@
   }
 
   async function load(){
-    // Check query parameters
-    checkQueryParams();
-    
     // Mostra messaggio di loading
     const box = $('#status');
     box.classList.remove('hidden');
