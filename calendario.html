@@ -132,7 +132,7 @@
 
   // === STATE ===
   let selectedCampionati = new Set(); // Set of selected campionato values
-  let showGiocatori = false; // Whether to show giocatori labels
+  let showGiocatori = true; // Whether to show giocatori labels (default: true)
 
   // === UTILS ===
   const $ = (sel, root=document) => root.querySelector(sel);
@@ -141,7 +141,7 @@
 
   function checkQueryParams(){
     const urlParams = new URLSearchParams(window.location.search);
-    showGiocatori = urlParams.get('m') === 'family';
+    showGiocatori = urlParams.get('g') !== 'no';
   }
 
   function capWeekdayShort(dStr){
