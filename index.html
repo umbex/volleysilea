@@ -50,7 +50,7 @@
 
     .topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:700;font-size:1rem}
     .when{color:#111;}
-    .badge-sede{border-radius:999px;padding:6px 10px;font-size:0.8rem;font-weight:700;color:#fff}
+    .badge-sede{border-radius:999px;padding:6px 10px;font-size:0.78rem;font-weight:700;color:#fff}
     .badge-sede.casa{background:var(--azzurro)}
     .badge-sede.trasferta{background:var(--grigio-700)}
 
@@ -235,7 +235,8 @@
         <article class="${cls}">
           <div class="topline">
             <span class="when">${giorno} • ${orario}</span>
-            <span class=\"badge-sede ${sedeIsCasa?'casa':'trasferta'}\">${sedeIsCasa?'CASA':'TRASFERTA'}</span>
+            <span class="labels ${showGiocatori ? '' : 'hidden'}">${giocatoriHtml}</span>
+            <span class=\"badge-sede ${sedeIsCasa?'casa':'trasferta'}\">${sedeIsCasa?'CASA':'FUORI'}</span>
           </div>
           <div class="teams-row">
             <div class="team-name team-left">${g.squadraCasa || '—'}</div>
