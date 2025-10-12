@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Volley Silea</title>
+  <!-- Icone per favicon e salvataggio su schermata Home iPhone -->
+  <link rel="icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" href="../icon-180.png" sizes="180x180" />
+  <style>
+    :root{
+      --azzurro:#0EA5E9;
+      --azzurro-50:#E0F2FE;
+      --azzurro-600:#0284C7;
+      --grigio-50:#F3F4F6;
+      --grigio-300:#D1D5DB;
+      --grigio-700:#374151;
+      --viola:#7C3AED;
+      --giallo:#F59E0B;
+      --nero:#0B1220;
+      --bianco:#FFFFFF;
+    }
+    html,body{margin:0;padding:0;background:#fff;color:var(--nero);font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";}
+    .app{max-width:780px;margin:0 auto;padding:16px 14px 100px;}
+    header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg, #fff 80%, rgba(255,255,255,0));padding:16px 0 10px;}
+    .header-content{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    h1{margin:0;font-weight:800;letter-spacing:0.2px;font-size:1.45rem;line-height:1.2;color:var(--azzurro);flex:1} 
+    .header-image{width:50px;height:50px;border-radius:50%;object-fit:cover;border:3px solid var(--azzurro);box-shadow:0 2px 8px rgba(14,165,233,0.3)}
+    .subtitle{font-size:0.98rem;color:#4B5563;margin-top:4px}
+
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px;align-items:center}
+    .checkbox-container{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+    .checkbox-container input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--azzurro)}
+    .checkbox-container label{cursor:pointer;font-weight:600;font-size:0.98rem;color:var(--grigio-700)}
+    
+    .campionato-filter{position:relative}
+    .campionato-btn{appearance:none;border:2px solid var(--azzurro);border-radius:999px;padding:8px 12px;font-weight:600;font-size:0.9rem;cursor:pointer;background:var(--bianco);color:var(--azzurro-600);transition:all .2s ease}
+    .campionato-btn:hover{background:var(--azzurro-50)}
+    .campionato-dropdown{position:absolute;top:100%;left:0;width:200%;background:var(--bianco);border:1px solid var(--grigio-300);border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:10;margin-top:4px;max-height:400px;overflow-y:auto;display:none}
+    .campionato-dropdown.show{display:block}
+    .campionato-item{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;transition:background .2s ease}
+    .campionato-item:hover{background:var(--grigio-50)}
+    .campionato-item input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--azzurro)}
+    .campionato-item label{cursor:pointer;font-size:0.9rem;color:var(--grigio-700);flex:1} 
+
+    .list{display:grid;gap:12px}
+    .card{border-radius:18px;padding:14px;border:1px solid rgba(2,132,199,.08);box-shadow:0 1px 2px rgba(2,132,199,.06), 0 12px 24px -24px rgba(0,0,0,.25);position:relative;}
+    .card.casa{background:var(--azzurro-50)}
+    .card.trasferta{background:var(--grigio-50)}
+
+    .topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:700;font-size:1rem}
+    .when{color:#111;}
+    .badge-sede{border-radius:999px;padding:6px 10px;font-size:0.8rem;font-weight:700;color:#fff}
+    .badge-sede.casa{background:var(--azzurro)}
+    .badge-sede.trasferta{background:var(--grigio-700)}
+
+    .teams-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;}
+    .team-name{flex:1;text-align:center;font-size:1.1rem;font-weight:700;}
+    .team-left{text-align:right;}
+    .team-right{text-align:left;}
+    .vs{font-size:1rem;font-weight:600;color:#4B5563;min-width:40px;text-align:center;}
+
+    .campionato{display:block;text-align:center;margin:6px auto 10px;padding:4px 10px;background:var(--azzurro-600);color:#fff;border-radius:999px;font-size:0.78rem;font-weight:700;width:max-content;}
+
+    .place{display:flex;flex-direction:column;gap:4px;margin-top:4px;text-align:center;}
+    .place a{color:#0f172a;text-decoration:none;border-bottom:2px solid transparent}
+    .place a:hover{border-bottom-color:currentColor}
+    .imp{font-weight:700}
+    .addr{font-size:0.98rem;color:#374151}
+
+    .labels{position:absolute;bottom:10px;right:14px;display:flex;gap:6px;}
+    .labels.hidden{display:none}
+    .label{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:6px 10px;font-weight:800;font-size:0.78rem;line-height:1;border:1px solid rgba(0,0,0,.06)}
+    .label.viki{background: var(--viola); color: #fff}
+    .label.mati{background: var(--giallo); color: #111}
+
+    @media (min-width:480px){
+      h1{font-size:1.6rem}
+      .team-name{font-size:1.2rem}
+    }
+
+    .notice{padding:12px 14px;border-radius:12px;background:#FEF3C7;border:1px solid #FCD34D;color:#7C2D12;margin:8px 0 16px}
+    .notice.loading{background:#E0F2FE;border-color:#0EA5E9;color:#0C4A6E}
+    .loading-dots{display:inline-block;animation:loading-dots 1.5s infinite}
+    @keyframes loading-dots{
+      0%,20%{content:''}
+      40%{content:'.'}
+      60%{content:'..'}
+      80%,100%{content:'...'}
+    }
+    .loading-dots::after{content:'';animation:loading-dots 1.5s infinite}
+    .hidden{display:none !important}
+
+    footer.note{margin-top:18px;text-align:center;font-size:12px;color:#6B7280;opacity:.6}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="header-content">
+        <h1>I campionati Volley Silea</h1>
+        <img src="icon-180.png" alt="Volley Silea" class="header-image" />
+      </div>
+      <div class="controls">
+        <div class="campionato-filter">
+          <button type="button" class="campionato-btn" id="campionato-btn">Scegli il campionato</button>
+          <div class="campionato-dropdown" id="campionato-dropdown"></div>
+        </div>
+        <div class="checkbox-container">
+          <input type="checkbox" id="show-past-events" />
+          <label for="show-past-events">Mostra partite già svolte</label>
+        </div>
+      </div>
+    </header>
+
+    <div id="status" class="notice hidden" aria-live="polite"></div>
+
+    <section id="list" class="list" aria-live="polite"></section>
+
+    <footer class="note">Versione v7</footer>
+  </div>
+
+  <script>
+  // === CONFIG ===
+  const SHEET_ID = "1TL4uYGiCLY1pzWM7omzWGiUVxPBnKb0wAAOAesQXZXc";
+  const SHEET_NAME = "Tab"; // aggiorna se il nome è diverso
+  const CSV_URLS = [
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`,
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`, // fallback: primo foglio
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`      // fallback generico
+  ];
+
+  // === STATE ===
+  let selectedCampionati = new Set(); // Set of selected campionato values
+  let showGiocatori = false; // Whether to show giocatori labels
+
+  // === UTILS ===
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const itDate = new Intl.DateTimeFormat('it-IT', { weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
+  const itTime = new Intl.DateTimeFormat('it-IT', { hour:'2-digit', minute:'2-digit'});
+
+  function checkQueryParams(){
+    const urlParams = new URLSearchParams(window.location.search);
+    showGiocatori = urlParams.get('m') === 'family';
+  }
+
+  function capWeekdayShort(dStr){
+    // Trasforma "dom 05/12/2025" in "Dom 05/12/2025"
+    return dStr.replace(/^(\p{L})(\p{L}{2})/u, (_,a,b)=>a.toUpperCase()+b.toLowerCase());
+  }
+
+  function csvParse(str){
+    const rows = [];
+    let i=0, field='', row=[], inQuotes=false;
+    while(i < str.length){
+      const c = str[i];
+      if(inQuotes){
+        if(c === '"'){
+          if(str[i+1] === '"'){ field+='"'; i++; }
+          else { inQuotes=false; }
+        } else { field += c; }
+      } else {
+        if(c === '"') inQuotes = true;
+        else if(c === ','){ row.push(field); field=''; }
+        else if(c === '\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+        else if(c === '\r'){ }
+        else { field += c; }
+      }
+      i++;
+    }
+    if(field.length>0 || row.length>0) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  // Forza formato DD/MM/YYYY
+  function toDateISO(dmy, hm){
+    if(!dmy) return null;
+    const [d,m,y] = dmy.split(/[\\/.-]/).map(n=>parseInt(n,10));
+    if(!d || !m || !y) return null;
+    let [hh,mm] = (hm || "12:00").split(':').map(n=>parseInt(n,10));
+    if(isNaN(hh)) hh=12;
+    if(isNaN(mm)) mm=0;
+    const date = new Date(y, m-1, d, hh, mm);
+    return isNaN(date.getTime()) ? null : date;
+  }
+    
+  function pick(row, keyMap){
+    const o = {};
+    for(const [k, aliasList] of Object.entries(keyMap)){
+      let v = '';
+      for(const alias of aliasList){
+        if(row.hasOwnProperty(alias)) { v = row[alias]; break; }
+      }
+      o[k] = (v||'').toString().trim();
+    }
+    return o;
+  }
+
+  // === RENDER ===
+  function render(list, {onlyUpcoming=false}={}){
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const filtered = list
+      .filter(g => g.dateObj && (!onlyUpcoming || g.dateObj >= midnight))
+      .filter(g => {
+        // Filter by campionato if any are selected
+        if(selectedCampionati.size === 0) return true;
+        const campionato = (g.campionato || '').trim();
+        return selectedCampionati.has(campionato);
+      })
+      .sort((a,b)=> a.dateObj - b.dateObj);
+
+    const box = $('#status');
+    if(onlyUpcoming && filtered.length===0){
+      box.classList.remove('hidden');
+      box.textContent = 'Nessuna partita futura trovata.';
+    } else { box.classList.add('hidden'); box.textContent=''; }
+
+    const out = filtered.map(g=>{
+      const sedeIsCasa = (g.sede||'').toLowerCase().includes('casa');
+      const cls = `card ${sedeIsCasa? 'casa':'trasferta'}`;
+      const giornoRaw = itDate.format(g.dateObj).replace(',', '');
+      const giorno = capWeekdayShort(giornoRaw); // es. Dom 05/12/2025
+      const orario = itTime.format(g.dateObj);
+
+      const giocatori = (g.giocatore||'').split(/[;\n,]/).map(s=>s.trim()).filter(Boolean);
+      const giocatoriHtml = giocatori.map(name=>{
+        const key = name.toLowerCase();
+        const type = key.includes('viki') ? 'viki' : key.includes('mati') ? 'mati' : 'altro';
+        const base = type==='viki' ? 'label viki' : type==='mati' ? 'label mati' : 'label';
+        return `<span class="${base}">${name}</span>`;
+      }).join('');
+
+      return `
+        <article class="${cls}">
+          <div class="topline">
+            <span class="when">${giorno} • ${orario}</span>
+            <span class=\"badge-sede ${sedeIsCasa?'casa':'trasferta'}\">${sedeIsCasa?'CASA':'TRASFERTA'}</span>
+          </div>
+          <div class="teams-row">
+            <div class="team-name team-left">${g.squadraCasa || '—'}</div>
+            <div class="vs">vs</div>
+            <div class="team-name team-right">${g.squadraOspite || '—'}</div>
+          </div>
+          <div class="campionato">${g.campionato || ''}</div>
+          <div class="place">
+            ${g.maps ? `<a class="imp" href="${g.maps}" target="_blank" rel="noopener">📍 ${g.impianto || 'Impianto'} →</a>` : `<span class="imp">📍 ${g.impianto || 'Impianto'}</span>`}
+            ${g.indirizzo ? `<a class="addr" href="${g.maps || '#'}" target="_blank" rel="noopener">${g.indirizzo}</a>` : ''}
+          </div>
+          <div class="labels ${showGiocatori ? '' : 'hidden'}">${giocatoriHtml}</div>
+        </article>`;
+    }).join('\n');
+
+    $('#list').innerHTML = out;
+  }
+
+  // === CAMPIONATO FILTER ===
+  function createCampionatoDropdown(games){
+    const uniqueCampionati = [...new Set(games.map(g => (g.campionato || '').trim()).filter(Boolean))];
+    
+    if(uniqueCampionati.length === 0) {
+      $('#campionato-btn').style.display = 'none';
+      return;
+    }
+    
+    // Initialize all campionati as selected by default
+    selectedCampionati = new Set(uniqueCampionati);
+    
+    const dropdown = $('#campionato-dropdown');
+    dropdown.innerHTML = uniqueCampionati.map(campionato => `
+      <div class="campionato-item">
+        <input type="checkbox" id="campionato-${campionato.replace(/[^a-zA-Z0-9]/g, '')}" checked />
+        <label for="campionato-${campionato.replace(/[^a-zA-Z0-9]/g, '')}">${campionato}</label>
+      </div>
+    `).join('');
+    
+    // Add event listeners to checkboxes
+    dropdown.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        const campionato = e.target.nextElementSibling.textContent;
+        if(e.target.checked) {
+          selectedCampionati.add(campionato);
+        } else {
+          selectedCampionati.delete(campionato);
+        }
+        // Re-render with current filters
+        const showPast = $('#show-past-events').checked;
+        render(games, {onlyUpcoming: !showPast});
+      });
+    });
+  }
+  
+  function toggleCampionatoDropdown(){
+    const dropdown = $('#campionato-dropdown');
+    dropdown.classList.toggle('show');
+  }
+
+  // === BOOT ===
+  async function fetchCSVwithFallback(urls){
+    let lastErr;
+    for(const url of urls){
+      try{
+        const res = await fetch(url, {cache:'no-store'});
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const txt = await res.text();
+        if(txt && txt.trim().length>3) return txt;
+      }catch(e){ lastErr = e; }
+    }
+    throw lastErr || new Error('Errore nel recupero CSV');
+  }
+
+  async function load(){
+    // Check query parameters
+    checkQueryParams();
+    
+    // Mostra messaggio di loading
+    const box = $('#status');
+    box.classList.remove('hidden');
+    box.classList.add('loading');
+    box.innerHTML = 'Attendi che aggiorno i calendari<span class="loading-dots"></span>';
+    
+    try{
+      const csv = await fetchCSVwithFallback(CSV_URLS);
+      const rows = csvParse(csv);
+      const headers = rows.shift().map(h=>h.trim());
+      const objects = rows
+        .filter(r=>r.some(x=> (x||'').toString().trim()!==''))
+        .map(r=> Object.fromEntries(headers.map((h,i)=>[h, (r[i]||'').toString().trim()])) );
+
+      const KEYMAP = {
+        campionato:["#Campionato","Campionato"],
+        data:["Data","data"],
+        ora:["Ora","ora"],
+        dataEstesa:["Data estesa"],
+        sede:["Sede"],
+        giocatore:["Giocatore","Giocatori"],
+        squadraCasa:["SquadraCasa","Casa","Squadra Casa"],
+        squadraOspite:["SquadraOspite","Ospite","Squadra Ospite"],
+        impianto:["Impianto"],
+        indirizzo:["IndirizzoImpianto","Indirizzo"],
+        maps:["MapsURL","Maps","Link Maps"]
+      };
+
+      const games = objects.map(row=>{
+        const g = {};
+        for(const k in KEYMAP){
+          const aliases = KEYMAP[k];
+          g[k] = '';
+          for(const a of aliases){ if(row[a]!==undefined){ g[k] = row[a]; break; } }
+        }
+        g.dateObj = toDateISO(g.data || g.dataEstesa, g.ora);
+        return g;
+      }).filter(g=>g.dateObj);
+
+      // Nascondi messaggio di loading e renderizza i dati
+      box.classList.add('hidden');
+      box.classList.remove('loading');
+      box.textContent = '';
+      
+      // Create campionato dropdown
+      createCampionatoDropdown(games);
+      
+      // Render "Partite da giocare" di default
+      render(games,{onlyUpcoming:true});
+
+      // Filtro checkbox
+      $('#show-past-events').addEventListener('change',(e)=>{
+        render(games,{onlyUpcoming:!e.target.checked});
+      });
+      
+      // Campionato dropdown toggle
+      $('#campionato-btn').addEventListener('click', toggleCampionatoDropdown);
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if(!e.target.closest('.campionato-filter')) {
+          $('#campionato-dropdown').classList.remove('show');
+        }
+      });
+    } catch(err){
+      // Nascondi loading e mostra errore
+      box.classList.remove('loading');
+      box.textContent = `Non riesco a leggere il foglio. Verifica che sia pubblico o pubblicato in CSV. Dettagli: ${err?.message||err}`;
+      box.classList.remove('hidden');
+    }
+  }
+
+  load();
+  </script>
+</body>
+</html>
