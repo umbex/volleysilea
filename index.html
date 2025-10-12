@@ -29,13 +29,16 @@
     .subtitle{font-size:0.98rem;color:#4B5563;margin-top:4px}
 
     .controls{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px;align-items:center}
-    .checkbox-container{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+    .checkbox-container{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:8px 12px;border-radius:999px;border:2px solid transparent;transition:all .2s ease}
     .checkbox-container input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--azzurro)}
     .checkbox-container label{cursor:pointer;font-weight:600;font-size:0.98rem;color:var(--grigio-700)}
+    .checkbox-container.active{border-color:var(--azzurro);background:var(--azzurro);color:var(--bianco)}
+    .checkbox-container.active label{color:var(--bianco)}
     
     .campionato-filter{position:relative}
     .campionato-btn{appearance:none;border:2px solid var(--azzurro);border-radius:999px;padding:8px 12px;font-weight:600;font-size:0.9rem;cursor:pointer;background:var(--bianco);color:var(--azzurro-600);transition:all .2s ease}
     .campionato-btn:hover{background:var(--azzurro-50)}
+    .campionato-btn.active{background:var(--azzurro);color:var(--bianco)}
     .campionato-dropdown{position:absolute;top:100%;left:0;width:200%;background:var(--bianco);border:1px solid var(--grigio-300);border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:10;margin-top:4px;max-height:400px;overflow-y:auto;display:none}
     .campionato-dropdown.show{display:block}
     .campionato-item{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;transition:background .2s ease}
@@ -133,7 +136,43 @@
 
   // === STATE ===
   let selectedCampionati = new Set(); // Set of selected campionato values
+  let allCampionati = new Set(); // Set of all available campionato values
   let showGiocatori = true; // Whether to show giocatori labels (default: true)
+
+  // === LOCAL STORAGE ===
+  const STORAGE_KEY = 'volleysilea-campionato-selection';
+  
+  function saveCampionatoSelection() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...selectedCampionati]));
+    } catch (e) {
+      console.warn('Could not save campionato selection to localStorage:', e);
+    }
+  }
+  
+  function loadCampionatoSelection() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        return new Set(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.warn('Could not load campionato selection from localStorage:', e);
+    }
+    return new Set();
+  }
+  
+  function updateFilterButtonStates() {
+    // Update campionato button state
+    const campionatoBtn = $('#campionato-btn');
+    const hasActiveCampionatoFilter = selectedCampionati.size > 0 && selectedCampionati.size < allCampionati.size;
+    campionatoBtn.classList.toggle('active', hasActiveCampionatoFilter);
+    
+    // Update checkbox filter state
+    const checkboxContainer = $('.checkbox-container');
+    const showPastCheckbox = $('#show-past-events');
+    checkboxContainer.classList.toggle('active', showPastCheckbox.checked);
+  }
 
   // === UTILS ===
   const $ = (sel, root=document) => root.querySelector(sel);
@@ -218,7 +257,7 @@
     } else { box.classList.add('hidden'); box.textContent=''; }
 
     const out = filtered.map(g=>{
-      const sedeIsCasa = (g.sede||'').toLowerCase().includes('casa');
+      const sedeIsCasa = (g.sede||'').toLowerCase() === 'casa';
       const cls = `card ${sedeIsCasa? 'casa':'trasferta'}`;
       const giornoRaw = itDate.format(g.dateObj).replace(',', '');
       const giorno = capWeekdayShort(giornoRaw); // es. Dom 05/12/2025
@@ -267,13 +306,29 @@
       return;
     }
     
-    // Initialize all campionati as selected by default
-    selectedCampionati = new Set(uniqueCampionati);
+    // Store all available campionati
+    allCampionati = new Set(uniqueCampionati);
+    
+    // Load saved selection from localStorage, or default to all selected
+    const savedSelection = loadCampionatoSelection();
+    selectedCampionati = new Set();
+    
+    // Only restore saved selections that still exist in current data
+    for (const campionato of savedSelection) {
+      if (allCampionati.has(campionato)) {
+        selectedCampionati.add(campionato);
+      }
+    }
+    
+    // If no valid saved selection, default to all selected
+    if (selectedCampionati.size === 0) {
+      selectedCampionati = new Set(uniqueCampionati);
+    }
     
     const dropdown = $('#campionato-dropdown');
     dropdown.innerHTML = uniqueCampionati.map(campionato => `
       <div class="campionato-item">
-        <input type="checkbox" id="campionato-${campionato.replace(/[^a-zA-Z0-9]/g, '')}" checked />
+        <input type="checkbox" id="campionato-${campionato.replace(/[^a-zA-Z0-9]/g, '')}" ${selectedCampionati.has(campionato) ? 'checked' : ''} />
         <label for="campionato-${campionato.replace(/[^a-zA-Z0-9]/g, '')}">${campionato}</label>
       </div>
     `).join('');
@@ -287,11 +342,21 @@
         } else {
           selectedCampionati.delete(campionato);
         }
+        
+        // Save to localStorage
+        saveCampionatoSelection();
+        
+        // Update button states
+        updateFilterButtonStates();
+        
         // Re-render with current filters
         const showPast = $('#show-past-events').checked;
         render(games, {onlyUpcoming: !showPast});
       });
     });
+    
+    // Update button states after creating dropdown
+    updateFilterButtonStates();
   }
   
   function toggleCampionatoDropdown(){
@@ -335,7 +400,6 @@
         campionato:["#Campionato","Campionato"],
         data:["Data","data"],
         ora:["Ora","ora"],
-        dataEstesa:["Data estesa"],
         sede:["Sede"],
         giocatore:["Giocatore","Giocatori"],
         squadraCasa:["SquadraCasa","Casa","Squadra Casa"],
@@ -352,7 +416,7 @@
           g[k] = '';
           for(const a of aliases){ if(row[a]!==undefined){ g[k] = row[a]; break; } }
         }
-        g.dateObj = toDateISO(g.data || g.dataEstesa, g.ora);
+        g.dateObj = toDateISO(g.data, g.ora);
         return g;
       }).filter(g=>g.dateObj);
 
@@ -369,6 +433,7 @@
 
       // Filtro checkbox
       $('#show-past-events').addEventListener('change',(e)=>{
+        updateFilterButtonStates();
         render(games,{onlyUpcoming:!e.target.checked});
       });
       
