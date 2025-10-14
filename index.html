@@ -203,6 +203,12 @@
       filterByGiocatore = false;
     }
 
+      // === NUOVO BLOCCO: aggiorna titolo dinamicamente ===
+    const h1 = document.querySelector('.header-content h1');
+    if (h1) {
+      h1.textContent = showGiocatori ? 'Calendario Viki Mati' : 'Calendario Volley Silea';
+    }
+
     updateCampionatoLinkVisibility();
   }
 
