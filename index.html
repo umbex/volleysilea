@@ -185,27 +185,20 @@
   const $ = (sel, root=document) => root.querySelector(sel);
   const itDate = new Intl.DateTimeFormat('it-IT', { weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
   const itTime = new Intl.DateTimeFormat('it-IT', { hour:'2-digit', minute:'2-digit'});
-
+ 
   function checkQueryParams(){
     const urlParams = new URLSearchParams(window.location.search);
-    const gParam = urlParams.get('g');
-    
-    if (gParam === 'vikimati') {
-      showGiocatori = true;
-      filterByGiocatore = true;
-    } else if (gParam === 'all') {
-      showGiocatori = true;
-      filterByGiocatore = false;
-    } else {
-      // If parameter is missing or any other value, hide labels and show all matches
-      showGiocatori = false;
-      filterByGiocatore = false;
-    }
-    
-    // Update campionato link visibility
+    const hasG = urlParams.has('g');
+
+    // Se c’è qualunque ?g=..., mostra le etichette e filtra per partite con giocatore
+    showGiocatori = hasG;
+    filterByGiocatore = hasG;
+
+    // Aggiorna visibilità/link del toggle
     updateCampionatoLinkVisibility();
   }
-  
+
+
   function updateCampionatoLinkVisibility(){
     const campionatoLink = $('#campionato-link');
     if (campionatoLink) {
