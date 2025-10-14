@@ -125,7 +125,7 @@
 
     <section id="list" class="list" aria-live="polite"></section>
 
-	<footer class="note"><a href="/" class="campionato" id="campionato-link" style="display: none;">Vedi tutti i campionati</a></footer>
+	<footer class="note"><a href="" class="campionato" id="campionato-link" style="display: none;">Vedi tutti i campionati</a></footer>
 	<footer class="note"><a href="https://www.fipavtreuno.net/gare?ComitatoId=5&StId=2267&DataDa=&StatoGara=&CId=&SId=149&btFiltro=CERCA" target="_blank" rel="noopener">Apri il sito FIPAV TRE.UNO</a></footer>
     <footer class="note">Versione v9</footer>
   </div>
@@ -207,6 +207,8 @@
     const campionatoLink = $('#campionato-link');
     if (campionatoLink) {
       campionatoLink.style.display = showGiocatori ? 'block' : 'none';
+      // Set href to current page without query parameters
+      campionatoLink.href = window.location.pathname;
     }
   }
 
