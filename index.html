@@ -188,13 +188,21 @@
  
   function checkQueryParams(){
     const urlParams = new URLSearchParams(window.location.search);
-    const hasG = urlParams.has('g');
+    const gParam = urlParams.get('g');
 
-    // Se c’è qualunque ?g=..., mostra le etichette e filtra per partite con giocatore
-    showGiocatori = hasG;
-    filterByGiocatore = hasG;
+    if (gParam === 'vikimati') {
+      showGiocatori = true;
+      filterByGiocatore = true;
+    } else if (gParam) {
+      // qualunque altro valore → mostra etichette ma non filtra
+      showGiocatori = true;
+      filterByGiocatore = false;
+    } else {
+      // nessun parametro → nessuna etichetta, nessun filtro
+      showGiocatori = false;
+      filterByGiocatore = false;
+    }
 
-    // Aggiorna visibilità/link del toggle
     updateCampionatoLinkVisibility();
   }
 
