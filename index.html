@@ -193,6 +193,9 @@
     if (gParam === 'vikimati') {
       showGiocatori = true;
       filterByGiocatore = true;
+    } else if (gParam === 'all') {
+      showGiocatori = true;
+      filterByGiocatore = false;
     } else {
       // If parameter is missing or any other value, hide labels and show all matches
       showGiocatori = false;
@@ -206,9 +209,23 @@
   function updateCampionatoLinkVisibility(){
     const campionatoLink = $('#campionato-link');
     if (campionatoLink) {
-      campionatoLink.style.display = showGiocatori ? 'block' : 'none';
-      // Set href to current page without query parameters
-      campionatoLink.href = window.location.pathname;
+      const urlParams = new URLSearchParams(window.location.search);
+      const gParam = urlParams.get('g');
+      
+      // Show link when showGiocatori is true OR when g=all
+      const shouldShow = showGiocatori || gParam === 'all';
+      campionatoLink.style.display = shouldShow ? 'block' : 'none';
+      
+      // Set href based on current state
+      if (showGiocatori) {
+        // If showGiocatori is true, link points to page with g=all
+        campionatoLink.href = `${window.location.pathname}?g=all`;
+        campionatoLink.textContent = 'Vedi tutti i campionati';
+      } else if (gParam === 'all') {
+        // If showGiocatori is false but g=all, link points to page with g=vikimati
+        campionatoLink.href = `${window.location.pathname}?g=vikimati`;
+        campionatoLink.textContent = 'Vedi solo partite di Viki e Mati';
+      }
     }
   }
 
