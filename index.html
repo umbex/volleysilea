@@ -255,7 +255,10 @@
     const now = new Date();
     const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const filtered = list
-      .filter(g => g.dateObj && (!onlyUpcoming || g.dateObj >= midnight))
+      .filter(g => {
+        if (!g.dateObj) return false;
+        return onlyUpcoming ? (g.dateObj >= midnight) : (g.dateObj < midnight);
+      })
       .filter(g => {
         // Filter by campionato if any are selected
         if(selectedCampionati.size === 0) return true;
@@ -479,12 +482,13 @@
       // Create campionato dropdown
       createCampionatoDropdown(games);
       
-      // Render "Partite da giocare" di default
+      // Render: when checkbox unchecked show starting today (upcoming)
       render(games,{onlyUpcoming:true});
 
       // Filtro checkbox
       $('#show-past-events').addEventListener('change',(e)=>{
         updateFilterButtonStates();
+        // when checked: show past strictly before today; when unchecked: show starting today
         render(games,{onlyUpcoming:!e.target.checked});
       });
       
