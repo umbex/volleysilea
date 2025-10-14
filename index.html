@@ -274,10 +274,13 @@
       .sort((a,b)=> a.dateObj - b.dateObj);
 
     const box = $('#status');
-    if(onlyUpcoming && filtered.length===0){
+    if(filtered.length===0){
       box.classList.remove('hidden');
-      box.textContent = 'Nessuna partita futura trovata.';
+      box.textContent = onlyUpcoming ? 'Nessuna partita futura trovata.' : 'Nessuna partita passata trovata.';
     } else { box.classList.add('hidden'); box.textContent=''; }
+
+    // Sort: future ascending, past descending (most recent first)
+    filtered.sort((a,b)=> onlyUpcoming ? (a.dateObj - b.dateObj) : (b.dateObj - a.dateObj));
 
     const out = filtered.map(g=>{
       const sedeIsCasa = (g.sede||'').toLowerCase() === 'casa';
