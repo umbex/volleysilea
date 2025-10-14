@@ -301,7 +301,7 @@
           </div>
           <div class="teams-row">
             <div class="team-name team-left">${g.squadraCasa || '—'}</div>
-            <div class="vs">vs</div>
+            <div class="vs">${(g.risultato||'').trim() || 'vs'}</div>
             <div class="team-name team-right">${g.squadraOspite || '—'}</div>
           </div>
           <div class="campionato">${g.campionato || ''}</div>
@@ -455,7 +455,8 @@
         squadraOspite:["SquadraOspite","Ospite","Squadra Ospite"],
         impianto:["Impianto"],
         indirizzo:["IndirizzoImpianto","Indirizzo"],
-        maps:["MapsURL","Maps","Link Maps"]
+        maps:["MapsURL","Maps","Link Maps"],
+        risultato:["Risultato","risultato"]
       };
 
       const games = objects.map(row=>{
