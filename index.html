@@ -212,17 +212,17 @@
       const urlParams = new URLSearchParams(window.location.search);
       const gParam = urlParams.get('g');
       
-      // Show link when showGiocatori is true OR when g=all
-      const shouldShow = showGiocatori || gParam === 'all';
+      // Show link only when g=vikimati or g=all
+      const shouldShow = gParam === 'vikimati' || gParam === 'all';
       campionatoLink.style.display = shouldShow ? 'block' : 'none';
       
       // Set href based on current state
-      if (showGiocatori) {
-        // If showGiocatori is true, link points to page with g=all
+      if (gParam === 'vikimati') {
+        // When g=vikimati, link points to page with g=all
         campionatoLink.href = `${window.location.pathname}?g=all`;
         campionatoLink.textContent = 'Vedi tutti i campionati';
       } else if (gParam === 'all') {
-        // If showGiocatori is false but g=all, link points to page with g=vikimati
+        // When g=all, link points to page with g=vikimati
         campionatoLink.href = `${window.location.pathname}?g=vikimati`;
         campionatoLink.textContent = 'Vedi solo partite di Viki e Mati';
       }
